@@ -25,6 +25,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/login';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './components/home/Home';
+import WholesalerDashboard from './pages/WholesalerDashboard';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/wholesaler" element={<WholesalerDashboard />} />
         {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
     </BrowserRouter>
