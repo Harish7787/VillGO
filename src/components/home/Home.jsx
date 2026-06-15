@@ -214,10 +214,10 @@ import FareEstimator from './FareEstimator';
 import ShipmentTracker from './ShipmentTracker';
 import Footer from '../common/Footer';
 import Toast from '../common/Toast';
-import T from '../data/localization'; 
+import T from '../data/localization';
 import Header from './HomeHeader';
 import ControlPanel from './ControlPanel';
-
+import { useNavigate } from "react-router-dom";
 
 // ============================================================================
 // CLEAN MAIN ORCHESTRATOR HOME COMPONENT
@@ -225,6 +225,13 @@ import ControlPanel from './ControlPanel';
 // ============================================================================
 
 export default function Home() {
+
+  const navigate = useNavigate();
+
+  const handleRouteRedirect = (path) => {
+    navigate(path);
+  };
+
   const [theme, setTheme] = useState('light');
   const [lang, setLang] = useState('en');
   const [resolvedTheme, setResolvedTheme] = useState('light');
@@ -308,9 +315,9 @@ export default function Home() {
   };
 
   // Redirect Simulators for clean local mapping
-  const handleRouteRedirect = (path, buttonName) => {
-    showToastMsg(`React Router: Moving cleanly to your custom "${buttonName}" page at [${path}]...`, 'success');
-  };
+  // const handleRouteRedirect = (path, buttonName) => {
+  //   showToastMsg(`React Router: Moving cleanly to your custom "${buttonName}" page at [${path}]...`, 'success');
+  // };
 
   // Section scroller
   const handleScrollToSection = (id) => {
@@ -323,25 +330,30 @@ export default function Home() {
   const text = T[lang];
 
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-300 flex flex-col justify-between ${
-      resolvedTheme === 'dark' ? 'bg-[#0b1120] text-slate-100' : 'bg-slate-50 text-slate-800'
-    }`}>
+    <div className={`min-h-screen font-sans transition-colors duration-300 flex flex-col justify-between ${resolvedTheme === 'dark' ? 'bg-[#0b1120] text-slate-100' : 'bg-slate-50 text-slate-800'
+      }`}>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Navbar Header Component */}
+      {/* <Header
+        text={text}
+        onRedirect={handleRouteRedirect}
+        resolvedTheme={resolvedTheme}
+        onScrollToSection={handleScrollToSection}
+      /> */}
+
       <Header
         text={text}
         onRedirect={handleRouteRedirect}
         resolvedTheme={resolvedTheme}
         onScrollToSection={handleScrollToSection}
       />
-
       {/* Main Containers */}
       <main className="flex-grow">
-        
+
         {/* HERO AREA (ID: hero-section) */}
         <section id="hero-section" className="px-6 py-12 md:py-20 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
+
           <HeroSection text={text} resolvedTheme={resolvedTheme}>
             <StatsCards text={text} resolvedTheme={resolvedTheme} />
           </HeroSection>
@@ -369,7 +381,7 @@ export default function Home() {
         {/* TRACKER & ROLE CARDS SECTION */}
         <section className={`py-16 ${resolvedTheme === 'dark' ? 'bg-slate-900/40' : 'bg-slate-100/40'}`}>
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12">
-            
+
             {/* Shipment Tracker Widget (ID: tracker-section) */}
             <div id="tracker-section" className="lg:col-span-5 space-y-6 scroll-mt-24">
               <ShipmentTracker
@@ -387,11 +399,10 @@ export default function Home() {
             <div id="roles-section" className="lg:col-span-7 space-y-6 scroll-mt-24">
               <h2 className="text-2xl font-black tracking-tight">{text.rolesTitle}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                
+
                 {/* Retailer Card */}
-                <div className={`p-5 rounded-2xl border transition-all ${
-                  resolvedTheme === 'dark' ? 'bg-[#121c33]/40 border-slate-800' : 'bg-white border-slate-200/80 shadow-sm'
-                }`}>
+                <div className={`p-5 rounded-2xl border transition-all ${resolvedTheme === 'dark' ? 'bg-[#121c33]/40 border-slate-800' : 'bg-white border-slate-200/80 shadow-sm'
+                  }`}>
                   <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950 flex items-center justify-center text-sky-500 font-black mb-3">R</div>
                   <h3 className="text-sm font-bold mb-2">{text.roleRetailer}</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">{text.roleRetailerDesc}</p>
@@ -404,9 +415,8 @@ export default function Home() {
                 </div>
 
                 {/* Wholesaler Card */}
-                <div className={`p-5 rounded-2xl border transition-all ${
-                  resolvedTheme === 'dark' ? 'bg-[#121c33]/40 border-slate-800' : 'bg-white border-slate-200/80 shadow-sm'
-                }`}>
+                <div className={`p-5 rounded-2xl border transition-all ${resolvedTheme === 'dark' ? 'bg-[#121c33]/40 border-slate-800' : 'bg-white border-slate-200/80 shadow-sm'
+                  }`}>
                   <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-500 font-black mb-3">W</div>
                   <h3 className="text-sm font-bold mb-2">{text.roleWholesaler}</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">{text.roleWholesalerDesc}</p>
@@ -419,9 +429,8 @@ export default function Home() {
                 </div>
 
                 {/* Transporter Card */}
-                <div className={`p-5 rounded-2xl border transition-all ${
-                  resolvedTheme === 'dark' ? 'bg-[#121c33]/40 border-slate-800' : 'bg-white border-slate-200/80 shadow-sm'
-                }`}>
+                <div className={`p-5 rounded-2xl border transition-all ${resolvedTheme === 'dark' ? 'bg-[#121c33]/40 border-slate-800' : 'bg-white border-slate-200/80 shadow-sm'
+                  }`}>
                   <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-500 font-black mb-3">T</div>
                   <h3 className="text-sm font-bold mb-2">{text.roleTransporter}</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">{text.roleTransporterDesc}</p>
@@ -454,9 +463,8 @@ export default function Home() {
       />
 
       {/* Footer System Showcase */}
-      <footer className={`px-6 py-12 border-t text-center ${
-        resolvedTheme === 'dark' ? 'bg-[#090d18] border-slate-800' : 'bg-white border-slate-100'
-      }`}>
+      <footer className={`px-6 py-12 border-t text-center ${resolvedTheme === 'dark' ? 'bg-[#090d18] border-slate-800' : 'bg-white border-slate-100'
+        }`}>
         <div className="max-w-7xl mx-auto space-y-4">
           <div className="flex justify-center items-center gap-2">
             <span className="text-lg font-black">{text.brand}</span>

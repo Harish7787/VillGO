@@ -82,14 +82,13 @@ const LoginForm = ({
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={() => onNavigate('register')}
-        className="w-full py-3 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-2xl border border-slate-200 hover:border-slate-300 transition-all text-sm block text-center"
-      >
-        Create Partner Account
-      </button>
-
+  <button
+  type="button"
+  onClick={() => onNavigate("register")}
+  className="w-full py-3 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-2xl border"
+>
+  Create Partner Account
+</button>
       {/* Demo helper info */}
       {/* <div className="mt-4 p-4 rounded-2xl bg-amber-50/75 border border-amber-100 text-xs text-amber-900/80 space-y-2">
         <div className="font-bold flex items-center gap-1.5 text-amber-900 text-[11px] uppercase tracking-wider">

@@ -86,10 +86,10 @@ export default function WholesalerSidebar({
 
   // Custom Navigation Menu array matching English UI
   const menuItems = [
-    { id: 'overview', label: 'Dashboard Kendra', icon: WholesalerIcons.Overview },
-    { id: 'products', label: 'Maze Products', icon: WholesalerIcons.Products },
-    { id: 'orders', label: 'Aaleli Orders', icon: WholesalerIcons.Orders },
-    { id: 'transporters', label: 'Vahatukdar Marg', icon: WholesalerIcons.Transporters },
+    { id: 'overview', label: 'Overview Summary', icon: WholesalerIcons.Overview },
+    { id: 'products', label: 'Manage Products', icon: WholesalerIcons.Products },
+    { id: 'orders', label: 'Manage Orders', icon: WholesalerIcons.Orders },
+    { id: 'transporters', label: 'Manage Transporters', icon: WholesalerIcons.Transporters },
     { id: 'broadcasts', label: 'Offers & Alerts', icon: WholesalerIcons.Alerts },
     { id: 'messages', label: 'Support Desk', icon: WholesalerIcons.Complaints }
   ];
