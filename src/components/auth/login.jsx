@@ -1,17 +1,24 @@
 import React, { useState } from 'react';
 import InputField from '../common/InputField';
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+
 
 
 const LoginForm = ({
-  mobile,
-  setMobile,
+  email,
+  setEmail,
   password,
   setPassword,
   showPassword,
   setShowPassword,
   onSubmit,
   onNavigate
-}) => (
+})=> (
+
+  
+
   <div className="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-slate-100/70 border border-slate-100 overflow-hidden transition-all duration-300 transform hover:shadow-2xl">
     {/* Banner Section */}
     <div className="bg-gradient-to-r from-sky-500 to-indigo-600 p-6 text-white text-center relative overflow-hidden">
@@ -27,12 +34,10 @@ const LoginForm = ({
     {/* Form Section */}
     <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-5">
       <InputField
-        label="Registered Mobile Number"
-        type="tel"
-        maxLength={10}
-        placeholder="Enter 10-digit number"
-        value={mobile}
-        onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+    label="Email Address"
+type="email"
+value={email}
+onChange={(e) => setEmail(e.target.value)}
         icon={
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -65,12 +70,19 @@ const LoginForm = ({
         </button>
       </div>
 
-      <button
+      {/* <button
         type="submit"
         className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-sky-100 hover:shadow-xl transition-all duration-200 transform active:scale-[0.98] text-sm tracking-wide"
-      >
+     >
         Sign In Securely
-      </button>
+      </button> */}
+
+      <button
+  type="submit"
+  className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold rounded-2xl"
+>
+  Sign In Securely
+</button>
 
       {/* Divider */}
       <div className="relative my-4">
@@ -84,7 +96,7 @@ const LoginForm = ({
 
   <button
   type="button"
-  onClick={() => onNavigate("register")}
+  onClick={() => onNavigate("/register")}
   className="w-full py-3 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-2xl border"
 >
   Create Partner Account

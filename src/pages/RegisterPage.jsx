@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import RegisterForm from "../components/auth/RegisterForm";
 import Toast from "../components/common/Toast";
 import VillgoLogo from "../components/common/VillgoLogo";
-
+import axios from "axios";
 const Register = () => {
   const navigate = useNavigate();
 
@@ -16,12 +16,12 @@ const Register = () => {
 
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("retailer");
   const [termsAccepted, setTermsAccepted] = useState(false);
-
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
+const handleRegisterSubmit = async (e) => {
+  e.preventDefault();
 
     if (!name || !mobile || !password) {
       setToast({
@@ -38,15 +38,41 @@ const Register = () => {
       });
       return;
     }
+  try {
+    const roleMap = {
+  retailer: "RETAILER",
+  wholesaler: "WOLESELLER",
+  transporter: "TRANSPORTER",
+};
 
-    setToast({
-      message: "Registration Successful",
-      type: "success",
-    });
+const res = await axios.post(
+  "https://villgo-backend-1.onrender.com/api/auth/register",
+  {
+    fullName: name,
+    email,
+    mobile,
+    role: roleMap[role],
+    password,
+  }
+);
 
-    setTimeout(() => {
-      navigate("/login");
-    }, 1000);
+setToast({
+  message: "Registration Successful",
+  type: "success",
+});
+setTimeout(() => {
+  navigate("/login");
+}, 1500);
+    alert("Registration Successful");
+
+    navigate("/login");
+  } catch (err) {
+    console.log(err);
+    alert("Registration Failed");
+  }
+    // setTimeout(() => {
+    //   navigate("/login");
+    // }, 1000);
   };
 
   return (
@@ -66,11 +92,14 @@ const Register = () => {
 
       {/* Center */}
       <main className="flex-1 flex items-center justify-center p-6">
+      
         <RegisterForm
           name={name}
           setName={setName}
           mobile={mobile}
           setMobile={setMobile}
+          email={email}
+          setEmail={setEmail}
           password={password}
           setPassword={setPassword}
           role={role}

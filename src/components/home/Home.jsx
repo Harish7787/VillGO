@@ -212,7 +212,7 @@ import HeroSection from './HeroSection';
 import StatsCards from './StatsCards';
 import FareEstimator from './FareEstimator';
 import ShipmentTracker from './ShipmentTracker';
-import Footer from '../common/Footer';
+import Footer from './Footer';
 import Toast from '../common/Toast';
 import T from '../data/localization';
 import Header from './HomeHeader';
@@ -463,7 +463,7 @@ export default function Home() {
       />
 
       {/* Footer System Showcase */}
-      <footer className={`px-6 py-12 border-t text-center ${resolvedTheme === 'dark' ? 'bg-[#090d18] border-slate-800' : 'bg-white border-slate-100'
+      {/* <footer className={`px-6 py-12 border-t text-center ${resolvedTheme === 'dark' ? 'bg-[#090d18] border-slate-800' : 'bg-white border-slate-100'
         }`}>
         <div className="max-w-7xl mx-auto space-y-4">
           <div className="flex justify-center items-center gap-2">
@@ -478,7 +478,9 @@ export default function Home() {
             © 2026 Villgo Logistics Inc. Built with care for Harish's portfolio.
           </div>
         </div>
-      </footer>
+      </footer> */}
+
+      <Footer text={text} resolvedTheme={resolvedTheme} />
 
     </div>
   );

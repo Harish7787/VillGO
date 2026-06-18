@@ -5,11 +5,14 @@ import LoginForm from "../components/auth/login";
 import RegisterForm from "../components/auth/RegisterForm";
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
 import Dashboard from "./Dashboard";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 const Login = () => {
   const [currentPage, setCurrentPage] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState(null);
-
+  const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -22,28 +25,41 @@ const Login = () => {
     setToast({ message, type });
   };
 
-  const handleLoginSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
-    if (!mobile || !password) {
-      showToastMsg("Please fill in all fields", "error");
-      return;
-    }
+    try {
+      const res = await axios.post(
+        "https://villgo-backend-1.onrender.com/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
-    if (mobile === "9999999999" && password === "123456") {
-      setLoggedInUser({
-        name: "Demo Retailer",
-        mobile,
-        role: "retailer",
+      localStorage.setItem("token", res.data.data);
+      localStorage.setItem("role", res.data.role);
+
+      if (res.data.role === "ADMIN") {
+        navigate("/admin");
+      } else if (res.data.role === "WOLESELLER") {
+        navigate("/wholesaler");
+      } else if (res.data.role === "RETAILER") {
+        navigate("/retailer");
+      } else if (res.data.role === "TRANSPORTER") {
+        navigate("/transporter");
+      }
+
+    } catch (err) {
+      console.log(err);
+      setToast({
+        message: "Invalid Email or Password",
+        type: "error",
       });
-
-      showToastMsg("Login Successful");
-      setCurrentPage("dashboard");
-    } else {
-      showToastMsg("Invalid Credentials", "error");
     }
   };
-
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
 
@@ -80,14 +96,14 @@ const Login = () => {
       <main className="flex-1 flex items-center justify-center p-6">
         {currentPage === "login" && (
           <LoginForm
-            mobile={mobile}
-            setMobile={setMobile}
+            email={email}
+            setEmail={setEmail}
             password={password}
             setPassword={setPassword}
             showPassword={showPassword}
             setShowPassword={setShowPassword}
             onSubmit={handleLoginSubmit}
-            onNavigate={setCurrentPage}
+            onNavigate={navigate}
           />
         )}
 

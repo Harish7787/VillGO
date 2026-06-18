@@ -89,7 +89,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
         {/* <Route path="/admin" element={<adminRouter />} /> */}
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Dashboard />} />
         <Route path="/wholesaler" element={<WholesalerDashboard />} />
         <Route path="/retailer" element={<RetailerDashboard />} />
         {/* <Route path="*" element={<NotFound />} /> */}

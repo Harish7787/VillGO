@@ -150,7 +150,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { RetailerNavbar } from '../components/Retailer/RetailerNavbar';
+import Toast from '../components/common/Toast';
+import { RetailerProductCard } from '../components/Retailer/RetailerProductCard';
+import { RetailerFilters } from '../components/Retailer/RetailerFilters';
+import { Icons } from '../components/Retailer/RetailerIcons';
 
 const INITIAL_PRODUCTS = [
   { id: 301, name: "Premium Basmati Rice (Sharbati)", category: "Anaj (Grains)", price: 78, originalPrice: 95, moq: 50, stock: 450, unit: "kg", wholesaler: "Ambika Bulk Traders", rating: 4.8, reviews: 142, img: "🌾", description: "Vibrant long grains, direct from GIDC Mehsana Depot. Soft texture after cooking and premium aroma." },

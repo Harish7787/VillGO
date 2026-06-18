@@ -115,6 +115,8 @@
 //     </aside>
 //   );
 // };
+import React from 'react';
+import { Icons } from './RetailerIcons.jsx';
 
 export const RetailerFilters = ({
   themeClasses,

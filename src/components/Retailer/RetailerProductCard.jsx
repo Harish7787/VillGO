@@ -165,6 +165,9 @@
 //     </div>
 //   );
 // };
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Icons } from './RetailerIcons.jsx';
 
 export const RetailerProductCard = ({
   product,

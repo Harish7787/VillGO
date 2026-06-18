@@ -135,6 +135,8 @@ const RegisterForm = ({
   termsAccepted,
   setTermsAccepted,
   onSubmit,
+  email,
+  setEmail
 }) => {
   const navigate = useNavigate();
 
@@ -158,6 +160,15 @@ const RegisterForm = ({
           placeholder="Enter your full name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+
+
+        <InputField
+          label="Email Address"
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <InputField
