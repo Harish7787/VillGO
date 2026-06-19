@@ -221,7 +221,7 @@ export const RetailerNavbar = ({
                   <button onClick={() => setActivePage('profile')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold">🏪 Store Profile</button>
                   <button onClick={() => setActivePage('complaints')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold">🚨 Complaints Desk</button>
                   <div className="border-t border-slate-100 dark:border-slate-850 my-1"></div>
-                  <button onClick={() => navigate('/login')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-red-500">Reset Portal</button>
+                  <button onClick={() => navigate('/login')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-red-500">Logout</button>
                 </div>
               </div>
             </div>

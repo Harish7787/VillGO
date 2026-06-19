@@ -216,7 +216,7 @@
 
 //   return (
 //     <div className={`min-h-screen font-sans transition-all duration-300 ${themeClasses.bg} flex flex-col md:flex-row`}>
-      
+
 //       {/* Toast Alert Feed */}
 //       <div className="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full">
 //         {toasts.map(t => (
@@ -270,7 +270,7 @@
 //         </header>
 
 //         <div className="p-4 md:p-8 space-y-6">
-          
+
 //           {/* TAB 1: OVERVIEW HUB (Graphs and Stats) */}
 //           {activeTab === 'overview' && (
 //             <div className="space-y-6 animate-fade-in">
@@ -524,10 +524,10 @@
 // }
 
 import React, { useState, useEffect } from 'react';
-import AdminSidebar from '../components/admin/AdminSidebar';  
+import AdminSidebar from '../components/admin/AdminSidebar';
 import MetricCard from '../components/common/MetricCard';
-import AdminIcons  from '../components/admin/AdminIcons';
-
+import AdminIcons from '../components/admin/AdminIcons';
+import { useNavigate } from "react-router-dom";
 
 // ============================================================================
 // MOBILE READY SUPER ADMIN WORKSPACE WITH AUTO SIDEBAR TOGGLE
@@ -539,7 +539,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(true);
-
+  const navigate = useNavigate();
   // Floating notifications
   const [toasts, setToasts] = useState([]);
 
@@ -622,33 +622,33 @@ export default function Dashboard() {
     }, 3500);
   };
 
-  const themeClasses = resolvedTheme === 'dark' 
+  const themeClasses = resolvedTheme === 'dark'
     ? {
-        bg: 'bg-[#0f172a] text-slate-100',
-        panel: 'bg-slate-900 border-slate-800 text-slate-100',
-        border: 'border-slate-850',
-        textMuted: 'text-slate-400',
-        input: 'bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:ring-sky-500 focus:border-sky-500',
-        sidebar: 'bg-slate-900 border-r border-slate-850 text-slate-100',
-        sidebarHover: 'hover:bg-slate-850 hover:text-white',
-        sidebarActive: 'bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/10',
-        tableRowHover: 'hover:bg-slate-850/40',
-        tableHeader: 'bg-slate-800 text-slate-300',
-        card: 'bg-slate-900 border border-slate-800 shadow-sm'
-      } 
+      bg: 'bg-[#0f172a] text-slate-100',
+      panel: 'bg-slate-900 border-slate-800 text-slate-100',
+      border: 'border-slate-850',
+      textMuted: 'text-slate-400',
+      input: 'bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:ring-sky-500 focus:border-sky-500',
+      sidebar: 'bg-slate-900 border-r border-slate-850 text-slate-100',
+      sidebarHover: 'hover:bg-slate-850 hover:text-white',
+      sidebarActive: 'bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/10',
+      tableRowHover: 'hover:bg-slate-850/40',
+      tableHeader: 'bg-slate-800 text-slate-300',
+      card: 'bg-slate-900 border border-slate-800 shadow-sm'
+    }
     : {
-        bg: 'bg-sky-50/50 text-slate-800',
-        panel: 'bg-white border-sky-100 text-slate-800',
-        border: 'border-sky-100',
-        textMuted: 'text-slate-500',
-        input: 'bg-white border-sky-200 text-slate-900 placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500',
-        sidebar: 'bg-sky-100 border-r border-sky-200 text-slate-800',
-        sidebarHover: 'hover:bg-sky-200 hover:text-sky-950',
-        sidebarActive: 'bg-sky-500 text-white shadow-lg shadow-sky-500/25',
-        tableRowHover: 'hover:bg-sky-200/25',
-        tableHeader: 'bg-sky-200/50 text-slate-700',
-        card: 'bg-white border border-sky-100 shadow-sm'
-      };
+      bg: 'bg-sky-50/50 text-slate-800',
+      panel: 'bg-white border-sky-100 text-slate-800',
+      border: 'border-sky-100',
+      textMuted: 'text-slate-500',
+      input: 'bg-white border-sky-200 text-slate-900 placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500',
+      sidebar: 'bg-sky-100 border-r border-sky-200 text-slate-800',
+      sidebarHover: 'hover:bg-sky-200 hover:text-sky-950',
+      sidebarActive: 'bg-sky-500 text-white shadow-lg shadow-sky-500/25',
+      tableRowHover: 'hover:bg-sky-200/25',
+      tableHeader: 'bg-sky-200/50 text-slate-700',
+      card: 'bg-white border border-sky-100 shadow-sm'
+    };
 
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(o => o.status === 'Pending').length;
@@ -750,7 +750,7 @@ export default function Dashboard() {
 
   return (
     <div className={`h-screen overflow-hidden font-sans transition-all duration-300 ${themeClasses.bg} flex flex-col md:flex-row`}>
-      
+
       {/* Toast Alert Feed - ONLY rendered when active to prevent click blocking overlay */}
       {toasts.length > 0 && (
         <div className="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full p-4 md:p-0">
@@ -775,14 +775,23 @@ export default function Dashboard() {
         theme={theme}
         setTheme={setTheme}
         themeClasses={themeClasses}
-        onLogout={() => showToast("Admin Logging out...", "warning")}
+        onLogout={() => {
+          localStorage.clear();
+          window.location.href = "/login";
+
+          showToast("Logged Out Successfully", "success");
+
+          setTimeout(() => {
+            navigate("/login");
+          }, 1000);
+        }}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
 
       {/* Main Panel Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        
+
         {/* ============================================================================
            MOBILE TOP BAR HEADER (Allows mobile users to easily open the sidebar!)
            ============================================================================ */}
@@ -796,8 +805,8 @@ export default function Dashboard() {
               <span className="text-[8px] text-slate-400 tracking-widest block uppercase font-black mt-1">Admin Panel</span>
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => setSidebarOpen(true)}
             className="p-2.5 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 active:scale-95 transition-all focus:outline-none"
             aria-label="Open Navigation Sidebar"
@@ -813,8 +822,8 @@ export default function Dashboard() {
           <h2 className="text-lg font-black capitalize tracking-tight">{activeTab} Panel</h2>
           <div className="flex items-center gap-6">
             <div className="relative w-64">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search indexes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -834,7 +843,7 @@ export default function Dashboard() {
         </header>
 
         <div className="p-4 md:p-8 space-y-6">
-          
+
           {/* TAB 1: OVERVIEW HUB (Graphs and Stats) */}
           {activeTab === 'overview' && (
             <div className="space-y-6 animate-fade-in">
@@ -1095,8 +1104,8 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Admin Username</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={adminProfile.name}
                       required
                       onChange={(e) => setAdminProfile({ ...adminProfile, name: e.target.value })}
@@ -1106,8 +1115,8 @@ export default function Dashboard() {
 
                   <div>
                     <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Associated Business Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={adminProfile.company}
                       required
                       onChange={(e) => setAdminProfile({ ...adminProfile, company: e.target.value })}
@@ -1119,8 +1128,8 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Mobile Contact No.</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={adminProfile.mobile}
                       required
                       onChange={(e) => setAdminProfile({ ...adminProfile, mobile: e.target.value })}
@@ -1130,8 +1139,8 @@ export default function Dashboard() {
 
                   <div>
                     <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Email Coordinates</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       value={adminProfile.email}
                       required
                       onChange={(e) => setAdminProfile({ ...adminProfile, email: e.target.value })}
@@ -1140,7 +1149,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   className="bg-sky-500 text-slate-950 font-black px-6 py-3.5 rounded-xl hover:bg-sky-600 transition-all shadow-md mt-4 focus:outline-none"
                 >
@@ -1162,8 +1171,8 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Platform Brand Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={platformSettings.siteName}
                       onChange={(e) => setPlatformSettings({ ...platformSettings, siteName: e.target.value })}
                       className={`w-full border p-3 rounded-xl ${themeClasses.input} focus:outline-none`}
@@ -1172,8 +1181,8 @@ export default function Dashboard() {
 
                   <div>
                     <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Central Helpdesk Helpline</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={platformSettings.supportContact}
                       onChange={(e) => setPlatformSettings({ ...platformSettings, supportContact: e.target.value })}
                       className={`w-full border p-3 rounded-xl ${themeClasses.input} focus:outline-none`}
@@ -1181,7 +1190,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   className="bg-slate-900 dark:bg-sky-500 dark:text-slate-950 text-white font-black px-6 py-3.5 rounded-xl hover:bg-opacity-90 transition-all mt-4 focus:outline-none"
                 >

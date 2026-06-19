@@ -216,13 +216,26 @@ export default function WholesalerSidebar({
               </div>
 
               {/* Logout Action */}
-              <button
+              {/* <button
                 onClick={() => setIsLoggedIn(false)}
                 className="w-full flex items-center space-x-2 text-xs font-bold text-red-500 hover:text-red-600 border-t border-slate-500/10 pt-2"
               >
                 <WholesalerIcons.Logout />
                 <span>Exit & Logout</span>
-              </button>
+              </button> */}
+
+              <button
+  onClick={() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+
+    window.location.href = "/login";
+  }}
+  className="w-full flex items-center space-x-2 text-xs font-bold text-red-500 hover:text-red-600 border-t border-slate-500/10 pt-2"
+>
+  <WholesalerIcons.Logout />
+  <span>Exit & Logout</span>
+</button>
             </div>
           )}
         </div>
