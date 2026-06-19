@@ -18,7 +18,8 @@ const Login = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("retailer");
   const [termsAccepted, setTermsAccepted] = useState(false);
-
+const [loading, setLoading] = useState(false);
+const [registerLoading, setRegisterLoading] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(null);
 
   const showToastMsg = (message, type = "success") => {
@@ -27,39 +28,76 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  // const handleLoginSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const res = await axios.post(
+  //       "https://villgo-backend-1.onrender.com/api/auth/login",
+  //       {
+  //         email,
+  //         password,
+  //       }
+  //     );
+
+  //     localStorage.setItem("token", res.data.data);
+  //     localStorage.setItem("role", res.data.role);
+
+  //     if (res.data.role === "ADMIN") {
+  //       navigate("/admin");
+  //     } else if (res.data.role === "WOLESELLER") {
+  //       navigate("/wholesaler");
+  //     } else if (res.data.role === "RETAILER") {
+  //       navigate("/retailer");
+  //     } else if (res.data.role === "TRANSPORTER") {
+  //       navigate("/transporter");
+  //     }
+
+  //   } catch (err) {
+  //     console.log(err);
+  //     setToast({
+  //       message: "Invalid Email or Password",
+  //       type: "error",
+  //     });
+  //   }
+  // };
+
   const handleLoginSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const res = await axios.post(
-        "https://villgo-backend-1.onrender.com/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+  setLoading(true);
 
-      localStorage.setItem("token", res.data.data);
-      localStorage.setItem("role", res.data.role);
-
-      if (res.data.role === "ADMIN") {
-        navigate("/admin");
-      } else if (res.data.role === "WOLESELLER") {
-        navigate("/wholesaler");
-      } else if (res.data.role === "RETAILER") {
-        navigate("/retailer");
-      } else if (res.data.role === "TRANSPORTER") {
-        navigate("/transporter");
+  try {
+    const res = await axios.post(
+      "https://villgo-backend-1.onrender.com/api/auth/login",
+      {
+        email,
+        password,
       }
+    );
 
-    } catch (err) {
-      console.log(err);
-      setToast({
-        message: "Invalid Email or Password",
-        type: "error",
-      });
+    localStorage.setItem("token", res.data.data);
+    localStorage.setItem("role", res.data.role);
+
+    if (res.data.role === "ADMIN") {
+      navigate("/admin");
+    } else if (res.data.role === "WOLESELLER") {
+      navigate("/wholesaler");
+    } else if (res.data.role === "RETAILER") {
+      navigate("/retailer");
+    } else if (res.data.role === "TRANSPORTER") {
+      navigate("/transporter");
     }
-  };
+  } catch (err) {
+    setToast({
+      message: "Invalid Email or Password",
+      type: "error",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
 
@@ -104,6 +142,7 @@ const Login = () => {
             setShowPassword={setShowPassword}
             onSubmit={handleLoginSubmit}
             onNavigate={navigate}
+             loading={loading}
           />
         )}
 

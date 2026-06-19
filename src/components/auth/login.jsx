@@ -14,7 +14,8 @@ const LoginForm = ({
   showPassword,
   setShowPassword,
   onSubmit,
-  onNavigate
+  onNavigate,
+  loading
 })=> (
 
   
@@ -77,11 +78,23 @@ onChange={(e) => setEmail(e.target.value)}
         Sign In Securely
       </button> */}
 
-      <button
+      {/* <button
   type="submit"
-  className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold rounded-2xl"
+  className="w-full  py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold rounded-2xl"
 >
   Sign In Securely
+</button> */}
+
+<button
+  type="submit"
+  disabled={loading}
+  className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-bold rounded-2xl disabled:opacity-70 flex items-center justify-center gap-2"
+>
+  {loading && (
+    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+  )}
+
+  {loading ? "Signing In..." : "Sign In Securely"}
 </button>
 
       {/* Divider */}

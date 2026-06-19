@@ -18,11 +18,12 @@ const Register = () => {
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [registerLoading, setRegisterLoading] = useState(false);
   const [role, setRole] = useState("retailer");
   const [termsAccepted, setTermsAccepted] = useState(false);
 const handleRegisterSubmit = async (e) => {
   e.preventDefault();
-
+  setRegisterLoading(true);
     if (!name || !mobile || !password) {
       setToast({
         message: "Please fill all fields",
@@ -107,6 +108,7 @@ setTimeout(() => {
           termsAccepted={termsAccepted}
           setTermsAccepted={setTermsAccepted}
           onSubmit={handleRegisterSubmit}
+          registerLoading={registerLoading}
         />
       </main>
 

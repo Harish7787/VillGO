@@ -136,7 +136,8 @@ const RegisterForm = ({
   setTermsAccepted,
   onSubmit,
   email,
-  setEmail
+  setEmail,
+  registerLoading
 }) => {
   const navigate = useNavigate();
 
@@ -223,13 +224,19 @@ const RegisterForm = ({
         </div>
 
         {/* Register */}
-        <button
+        {/* <button
           type="submit"
           className="w-full py-3 bg-gradient-to-r from-indigo-500 to-sky-500 text-white rounded-2xl font-bold"
         >
           Create Account
-        </button>
-
+        </button> */}
+   <button
+  type="submit"
+  disabled={registerLoading}
+  className="w-full py-3 bg-gradient-to-r from-indigo-500 to-sky-500 text-white rounded-2xl font-bold disabled:opacity-70"
+>
+  {registerLoading ? "Creating Account..." : "Create Account"}
+</button>
         {/* Login */}
         <button
           type="button"
