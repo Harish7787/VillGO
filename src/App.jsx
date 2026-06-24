@@ -28,7 +28,7 @@ import Home from './components/home/Home';
 import WholesalerDashboard from './pages/WholesalerDashboard';
 import RetailerDashboard from './pages/RetailerDashboard';
 import RegisterPage from './pages/RegisterPage';
-
+import AdminRouter from "./routes/adminRouter";
 
 const HomeMock = () => {
   const navigate = useNavigate();
@@ -88,8 +88,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
-        {/* <Route path="/admin" element={<adminRouter />} /> */}
-        <Route path="/admin" element={<Dashboard />} />
+       <Route path="/admin/*" element={<AdminRouter />} />
+        {/* <Route path="/admin" element={<Dashboard />} /> */}
         <Route path="/wholesaler" element={<WholesalerDashboard />} />
         <Route path="/retailer" element={<RetailerDashboard />} />
         {/* <Route path="*" element={<NotFound />} /> */}

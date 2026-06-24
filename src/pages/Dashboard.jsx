@@ -528,6 +528,8 @@ import AdminSidebar from '../components/admin/AdminSidebar';
 import MetricCard from '../components/common/MetricCard';
 import AdminIcons from '../components/admin/AdminIcons';
 import { useNavigate } from "react-router-dom";
+import AdminModals from '../components/admin/AdminModals';
+import ProductTable from '../components/admin/ProductTable';
 
 // ============================================================================
 // MOBILE READY SUPER ADMIN WORKSPACE WITH AUTO SIDEBAR TOGGLE
@@ -552,11 +554,11 @@ export default function Dashboard() {
     { id: 5, name: "Ketan Kirana Mart", mobile: "9123456789", role: "Retailer", is_approved: true, status: "Blocked" }
   ]);
 
-  const [products, setProducts] = useState([
-    { id: 101, name: "Premium Basmati Rice", category: "Grain", price: 85, moq: 50, stock: 500, wholesaler: "Ambika Bulk Traders" },
-    { id: 102, name: "Refined Cottonseed Oil 15L", category: "Oil", price: 1650, moq: 10, stock: 120, wholesaler: "Ambika Bulk Traders" },
-    { id: 103, name: "Whole Wheat Atta 10kg", category: "Flour", price: 380, moq: 20, stock: 350, wholesaler: "Maruti Distributors" }
-  ]);
+  // const [products, setProducts] = useState([
+  //   { id: 101, name: "Premium Basmati Rice", category: "Grain", price: 85, moq: 50, stock: 500, wholesaler: "Ambika Bulk Traders" },
+  //   { id: 102, name: "Refined Cottonseed Oil 15L", category: "Oil", price: 1650, moq: 10, stock: 120, wholesaler: "Ambika Bulk Traders" },
+  //   { id: 103, name: "Whole Wheat Atta 10kg", category: "Flour", price: 380, moq: 20, stock: 350, wholesaler: "Maruti Distributors" }
+  // ]);
 
   const [orders, setOrders] = useState([
     { id: "ORD-9981", retailer: "Harish Provision Store", total: 42500, status: "Pending", transporter: "Gujarat Cargo Express", deliveryNote: "Deliver before Friday" },
@@ -588,6 +590,7 @@ export default function Dashboard() {
     email: "harish@shwebcreatives.com",
     role: "Super Admin"
   });
+
 
   // Modal setup
   const [modalMode, setModalMode] = useState(null);
@@ -747,6 +750,91 @@ export default function Dashboard() {
     setComplaints(complaints.map(c => c.id === complaintId ? { ...c, status: c.status === 'Pending' ? 'Resolved' : 'Pending' } : c));
     showToast("Grievance status changed");
   };
+  //-------------
+
+  const handleAddProduct = async () => {
+    const formData = new FormData();
+
+    formData.append("productName", productName);
+    formData.append("price", price);
+    formData.append("stock", stock);
+    formData.append("image", imageFile);
+
+    try {
+      await addProduct(formData);
+
+      showToast("Product Added");
+
+      loadProducts();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleUpdateProduct = async (id) => {
+    const formData = new FormData();
+
+    formData.append("productName", productName);
+    formData.append("price", price);
+    formData.append("stock", stock);
+
+    try {
+      await updateProduct(id, formData);
+
+      showToast("Product Updated");
+
+      loadProducts();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+
+  const handleDeleteProduct = async (id) => {
+    try {
+      await deleteProduct(id);
+
+      showToast("Product Deleted");
+
+      loadProducts();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const handleRestoreProduct = async (id) => {
+    try {
+      await restoreProduct(id);
+
+      showToast("Product Restored");
+
+      loadProducts();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    const res = await getActiveProducts();
+    setProducts(res.data.data);
+  };
+
+  const handleEdit = (product) => {
+    console.log("Edit Product:", product);
+
+    setSelectedProduct(product);
+    setShowEditModal(true);
+  };
+
 
   return (
     <div className={`h-screen overflow-hidden font-sans transition-all duration-300 ${themeClasses.bg} flex flex-col md:flex-row`}>
@@ -943,43 +1031,56 @@ export default function Dashboard() {
 
           {/* TAB 3: PRODUCTS CRUD */}
           {activeTab === 'products' && (
-            <div className={`${themeClasses.panel} border rounded-2xl overflow-hidden animate-fade-in`}>
-              <div className="p-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h3 className="text-sm font-black">Master Catalog Products</h3>
-                <button onClick={() => handleOpenModal('product', 'create')} className="w-full sm:w-auto bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs px-4 py-3 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all"><AdminIcons.Plus /> Publish Product</button>
-              </div>
-              <div className="overflow-x-auto w-full">
-                <table className="w-full text-left min-w-[600px]">
-                  <thead>
-                    <tr className={`text-[10px] uppercase font-black tracking-wider ${themeClasses.tableHeader}`}>
-                      <th className="p-4">Product</th>
-                      <th className="p-4">Category</th>
-                      <th className="p-4">Price (INR)</th>
-                      <th className="p-4">Stock</th>
-                      <th className="p-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y text-xs">
-                    {products.map(p => (
-                      <tr key={p.id} className={themeClasses.tableRowHover}>
-                        <td className="p-4 font-bold">{p.name}</td>
-                        <td className="p-4">{p.category}</td>
-                        <td className="p-4 font-mono font-bold">₹{p.price}</td>
-                        <td className="p-4">{p.stock} Units</td>
-                        <td className="p-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button onClick={() => handleOpenModal('product', 'edit', p)} className="p-2 text-sky-500 hover:bg-sky-100 rounded-lg transition-colors"><AdminIcons.Edit /></button>
-                            <button onClick={() => handleDeleteItem('product', p.id)} className="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-colors"><AdminIcons.Trash /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            // <div className={`${themeClasses.panel} border rounded-2xl overflow-hidden animate-fade-in`}>
+            //   <div className="p-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            //     <h3 className="text-sm font-black">Master Catalog Products</h3>
+            //     <button onClick={() => handleOpenModal('product', 'create')} className="w-full sm:w-auto bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs px-4 py-3 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all"><AdminIcons.Plus /> Publish Product</button>
+            //   </div>
+            //   <div className="overflow-x-auto w-full">
+            //     <table className="w-full text-left min-w-[600px]">
+            //       <thead>
+            //         <tr className={`text-[10px] uppercase font-black tracking-wider ${themeClasses.tableHeader}`}>
+            //           <th className="p-4">Product</th>
+            //           <th className="p-4">Category</th>
+            //           <th className="p-4">Price (INR)</th>
+            //           <th className="p-4">Stock</th>
+            //           <th className="p-4 text-right">Actions</th>
+            //         </tr>
+            //       </thead>
+            //       <tbody className="divide-y text-xs">
+            //         {products.map(p => (
+            //           <tr key={p.id} className={themeClasses.tableRowHover}>
+            //             <td className="p-4 font-bold">{p.name}</td>
+            //             <td className="p-4">{p.category}</td>
+            //             <td className="p-4 font-mono font-bold">₹{p.price}</td>
+            //             <td className="p-4">{p.stock} Units</td>
+            //             <td className="p-4 text-right">
+            //               <div className="flex justify-end gap-2">
+            //                 <button onClick={() => handleOpenModal('product', 'edit', p)} className="p-2 text-sky-500 hover:bg-sky-100 rounded-lg transition-colors"><AdminIcons.Edit /></button>
+            //                 <button
+            //                   onClick={() => handleDeleteProduct(p.id)}
+            //                 >
+            //                   Delete
+            //                 </button>
+            //               </div>
+            //             </td>
+            //           </tr>
+            //         ))}
+            //       </tbody>
+            //     </table>
+            //   </div>
+            // </div>
+                 <ProductTable
+            products={products}
+            onDelete={handleDeleteItem}
+            onRestore={handleRestoreProduct}
+            onEdit={handleEdit}
+            onBack={() => setActivePage("dashboard")}
+            onAddProduct={() => setActivePage("addProduct")}
+          />
           )}
 
+     
           {/* TAB 4: ORDERS CRUD */}
           {activeTab === 'orders' && (
             <div className={`${themeClasses.panel} border rounded-2xl overflow-hidden animate-fade-in`}>

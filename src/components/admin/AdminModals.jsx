@@ -1,5 +1,4 @@
 import React from 'react';
-import { AdminIcons } from '../common/AdminIcons';
 
 // ============================================================================
 // SYSTEM MODALS ORCHESTRATOR FOR SAFE PLATFORM CRUD OPERATIONS
