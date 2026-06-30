@@ -51,8 +51,9 @@ export default function AdminRouter() {
           element={<ProductEdit />}
         />
 
+<Route path="users" element={<Dashboard />} />
       </Route>
-
+      
     </Routes>
   );
 }

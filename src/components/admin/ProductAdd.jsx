@@ -219,9 +219,15 @@ import { ArrowLeft, Save, UploadCloud, X, Package, Layers, Tag, DollarSign, Info
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 
+import { addProduct } from "../../api/productApi";
+
 export default function ProductAdd({ onSubmit }) {
   const navigate = useNavigate();
-
+const [toast, setToast] = useState({
+  show: false,
+  message: "",
+  type: "success",
+});
   // ૧. સાઇડબાર અને થીમ કંટ્રોલ સ્ટેટ્સ
   const [activeTab, setActiveTab] = useState("products");
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -269,38 +275,80 @@ export default function ProductAdd({ onSubmit }) {
     setImagePreview(null);
   };
 
-  // ⚡ લોડિંગ અને API કોલ હેન્ડલર
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // લોડિંગ સ્પિનર ચાલુ કરો
-    setLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
+  setLoading(true);
+
+  try {
     const formData = new FormData();
-    Object.keys(product).forEach((key) => {
-      formData.append(key, product[key]);
+
+    Object.entries(product).forEach(([key, value]) => {
+      formData.append(key, value);
     });
 
-    try {
-      // જો પેરન્ટ તરફથી onSubmit પ્રોપ પાસ થઈ હોય તો તેના રિસ્પોન્સની રાહ જુઓ (Async await)
-      if (onSubmit) {
-        await onSubmit(formData);
-      } else {
-        // જો તમે લોકલ ટેસ્ટિંગ કરતા હોવ તો ૨ સેકન્ડનો ફેક નેટવર્ક ડીલે જોવા માટે:
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log("Product Form Data Sent Successfully!");
-      }
+    await addProduct(formData);
+
+    setToast({
+      show: true,
+      message: "Product added successfully.",
+      type: "success",
+    });
+
+  navigate("/admin/products", {
+    replace: true
+}); 
+
+    setTimeout(() => {
+      navigate("/admin/products");
+    }, 1200);
+
+  }catch (error) {
+  console.log(error.response);
+  console.log(error.response?.data);
+
+  setToast({
+    show: true,
+    message: error.response?.data?.message || "Failed to add product",
+    type: "error",
+  });
+} finally {
+    setLoading(false);
+  }
+};
+
+  // // ⚡ લોડિંગ અને API કોલ હેન્ડલર
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+    
+  //   // લોડિંગ સ્પિનર ચાલુ કરો
+  //   setLoading(true);
+
+  //   const formData = new FormData();
+  //   Object.keys(product).forEach((key) => {
+  //     formData.append(key, product[key]);
+  //   });
+
+  //   try {
+  //     // જો પેરન્ટ તરફથી onSubmit પ્રોપ પાસ થઈ હોય તો તેના રિસ્પોન્સની રાહ જુઓ (Async await)
+  //     if (onSubmit) {
+  //       await onSubmit(formData);
+  //     } else {
+  //       // જો તમે લોકલ ટેસ્ટિંગ કરતા હોવ તો ૨ સેકન્ડનો ફેક નેટવર્ક ડીલે જોવા માટે:
+  //       await new Promise((resolve) => setTimeout(resolve, 2000));
+  //       console.log("Product Form Data Sent Successfully!");
+  //     }
       
-      // સક્સેસ થયા પછી પાછા એડમિન ડેશબોર્ડ પેજ પર લઈ જાઓ
-      navigate("/admin");
-    } catch (error) {
-      console.error("API Call failed:", error);
-      alert("પ્રોડક્ટ સેવ કરવામાં એરર આવી છે!");
-    } finally {
-      // પ્રોસેસ પુરી થાય એટલે લોડિંગ બંધ કરી દો
-      setLoading(false);
-    }
-  };
+  //     // સક્સેસ થયા પછી પાછા એડમિન ડેશબોર્ડ પેજ પર લઈ જાઓ
+  //     navigate("/admin/produts");
+  //   } catch (error) {
+  //     console.error("API Call failed:", error);
+  //     alert("પ્રોડક્ટ સેવ કરવામાં એરર આવી છે!");
+  //   } finally {
+  //     // પ્રોસેસ પુરી થાય એટલે લોડિંગ બંધ કરી દો
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-[#0b1120]">

@@ -156,6 +156,11 @@
 // }
 import React, { useState, useEffect } from "react";
 import {
+  getActiveProducts,
+  deleteProduct,
+  restoreProduct,
+} from "../../api/productApi";
+import {
   Plus,
   Pencil,
   Trash2,
@@ -173,6 +178,7 @@ import {
   ToggleRight
 } from "lucide-react";
 import { useNavigate, useInRouterContext } from "react-router-dom";
+import Toast from "../common/Toast";
 
 export default function ProductTable({
   products: initialProducts = [],
@@ -182,6 +188,7 @@ export default function ProductTable({
   apiHost = "http://localhost:8080",
   theme = "light"
 }) {
+  
   // Safe Router navigation checker to prevent sandbox preview compilation crashes
   let navigate;
   try {
@@ -199,121 +206,121 @@ export default function ProductTable({
 
   // ━━━━━━━━━━━━━━━━━ 1. SELF-CONTAINED BACKEND API MAPPINGS ━━━━━━━━━━━━━━━━━
   // Defined locally using apiHost state to prevent any unresolved "./api" import errors during build
-  const api = {
-    categories: {
-      getActive: async () => {
-        const res = await fetch(`${apiHost}/api/categories/active`);
-        if (!res.ok) throw new Error("Network response was not ok");
-        return res.json();
-      },
-      create: async (formData) => {
-        const res = await fetch(`${apiHost}/api/categories/add`, {
-          method: "POST",
-          body: formData
-        });
-        if (!res.ok) throw new Error("Failed to create category");
-        return res.json();
-      },
-      update: async (id, formData) => {
-        const res = await fetch(`${apiHost}/api/categories/update/${id}`, {
-          method: "PUT",
-          body: formData
-        });
-        if (!res.ok) throw new Error("Failed to update category");
-        return res.json();
-      },
-      changeAction: async (id, action) => {
-        const res = await fetch(`${apiHost}/api/categories/action/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action })
-        });
-        if (!res.ok) throw new Error("Failed to change action status");
-        return res.json();
-      },
-      softDelete: async (id) => {
-        const res = await fetch(`${apiHost}/api/categories/softdelete/${id}`, {
-          method: "DELETE"
-        });
-        if (!res.ok) throw new Error("Failed to delete category");
-        return res.json();
-      },
-      restore: async (id) => {
-        const res = await fetch(`${apiHost}/api/categories/restore/${id}`, {
-          method: "PUT"
-        });
-        if (!res.ok) throw new Error("Failed to restore category");
-        return res.json();
-      }
-    },
-    brands: {
-      getActive: async () => {
-        const res = await fetch(`${apiHost}/api/brands/active`);
-        if (!res.ok) throw new Error("Network response was not ok");
-        return res.json();
-      },
-      create: async (formData) => {
-        const res = await fetch(`${apiHost}/api/brands`, {
-          method: "POST",
-          body: formData
-        });
-        if (!res.ok) throw new Error("Failed to create brand");
-        return res.json();
-      },
-      update: async (id, formData) => {
-        const res = await fetch(`${apiHost}/api/brands/update/${id}`, {
-          method: "PUT",
-          body: formData
-        });
-        if (!res.ok) throw new Error("Failed to update brand");
-        return res.json();
-      },
-      changeAction: async (id, action) => {
-        const res = await fetch(`${apiHost}/api/brands/action/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action })
-        });
-        if (!res.ok) throw new Error("Failed to change action status");
-        return res.json();
-      },
-      softDelete: async (id) => {
-        const res = await fetch(`${apiHost}/api/brands/soft-delete/${id}`, {
-          method: "DELETE"
-        });
-        if (!res.ok) throw new Error("Failed to delete brand");
-        return res.json();
-      },
-      restore: async (id) => {
-        const res = await fetch(`${apiHost}/api/brands/restore/${id}`, {
-          method: "PUT"
-        });
-        if (!res.ok) throw new Error("Failed to restore brand");
-        return res.json();
-      }
-    },
-    products: {
-      getActive: async () => {
-        const res = await fetch(`${apiHost}/api/products/active`);
-        if (!res.ok) throw new Error("Failed to fetch products");
-        return res.json();
-      },
-      softDelete: async (id) => {
-        const res = await fetch(`${apiHost}/api/products/soft-delete/${id}`, {
-          method: "DELETE"
-        });
-        if (!res.ok) throw new Error("Failed to delete product");
-        return res.json();
-      },
-      restore: async (id) => {
-        const res = await fetch(`${apiHost}/api/products/restore/${id}`, {
-          method: "PUT"
-        });
-        if (!res.ok) throw new Error("Failed to restore product");
-        return res.json();
-      }
-    }
-  };
+  // const api = {
+  //   categories: {
+  //     getActive: async () => {
+  //       const res = await fetch(`${apiHost}/api/categories/active`);
+  //       if (!res.ok) throw new Error("Network response was not ok");
+  //       return res.json();
+  //     },
+  //     create: async (formData) => {
+  //       const res = await fetch(`${apiHost}/api/categories/add`, {
+  //         method: "POST",
+  //         body: formData
+  //       });
+  //       if (!res.ok) throw new Error("Failed to create category");
+  //       return res.json();
+  //     },
+  //     update: async (id, formData) => {
+  //       const res = await fetch(`${apiHost}/api/categories/update/${id}`, {
+  //         method: "PUT",
+  //         body: formData
+  //       });
+  //       if (!res.ok) throw new Error("Failed to update category");
+  //       return res.json();
+  //     },
+  //     changeAction: async (id, action) => {
+  //       const res = await fetch(`${apiHost}/api/categories/action/${id}`, {
+  //         method: "PUT",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ action })
+  //       });
+  //       if (!res.ok) throw new Error("Failed to change action status");
+  //       return res.json();
+  //     },
+  //     softDelete: async (id) => {
+  //       const res = await fetch(`${apiHost}/api/categories/softdelete/${id}`, {
+  //         method: "DELETE"
+  //       });
+  //       if (!res.ok) throw new Error("Failed to delete category");
+  //       return res.json();
+  //     },
+  //     restore: async (id) => {
+  //       const res = await fetch(`${apiHost}/api/categories/restore/${id}`, {
+  //         method: "PUT"
+  //       });
+  //       if (!res.ok) throw new Error("Failed to restore category");
+  //       return res.json();
+  //     }
+  //   },
+  //   brands: {
+  //     getActive: async () => {
+  //       const res = await fetch(`${apiHost}/api/brands/active`);
+  //       if (!res.ok) throw new Error("Network response was not ok");
+  //       return res.json();
+  //     },
+  //     create: async (formData) => {
+  //       const res = await fetch(`${apiHost}/api/brands`, {
+  //         method: "POST",
+  //         body: formData
+  //       });
+  //       if (!res.ok) throw new Error("Failed to create brand");
+  //       return res.json();
+  //     },
+  //     update: async (id, formData) => {
+  //       const res = await fetch(`${apiHost}/api/brands/update/${id}`, {
+  //         method: "PUT",
+  //         body: formData
+  //       });
+  //       if (!res.ok) throw new Error("Failed to update brand");
+  //       return res.json();
+  //     },
+  //     changeAction: async (id, action) => {
+  //       const res = await fetch(`${apiHost}/api/brands/action/${id}`, {
+  //         method: "PUT",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ action })
+  //       });
+  //       if (!res.ok) throw new Error("Failed to change action status");
+  //       return res.json();
+  //     },
+  //     softDelete: async (id) => {
+  //       const res = await fetch(`${apiHost}/api/brands/soft-delete/${id}`, {
+  //         method: "DELETE"
+  //       });
+  //       if (!res.ok) throw new Error("Failed to delete brand");
+  //       return res.json();
+  //     },
+  //     restore: async (id) => {
+  //       const res = await fetch(`${apiHost}/api/brands/restore/${id}`, {
+  //         method: "PUT"
+  //       });
+  //       if (!res.ok) throw new Error("Failed to restore brand");
+  //       return res.json();
+  //     }
+  //   },
+  //   products: {
+  //     getActive: async () => {
+  //       const res = await fetch(`${apiHost}/api/products/active`);
+  //       if (!res.ok) throw new Error("Failed to fetch products");
+  //       return res.json();
+  //     },
+  //     softDelete: async (id) => {
+  //       const res = await fetch(`${apiHost}/api/products/soft-delete/${id}`, {
+  //         method: "DELETE"
+  //       });
+  //       if (!res.ok) throw new Error("Failed to delete product");
+  //       return res.json();
+  //     },
+  //     restore: async (id) => {
+  //       const res = await fetch(`${apiHost}/api/products/restore/${id}`, {
+  //         method: "PUT"
+  //       });
+  //       if (!res.ok) throw new Error("Failed to restore product");
+  //       return res.json();
+  //     }
+  //   }
+  // };
 
   // ━━━━━━━━━━━━━━━━━ 2. RELIABLE THEME AUTO DETECTOR ━━━━━━━━━━━━━━━━━
   const [isDark, setIsDark] = useState(theme === "dark");
@@ -359,47 +366,51 @@ export default function ProductTable({
   const [imagePreview, setImagePreview] = useState(null);
 
   // Sync products prop with internal productsList safely
-  useEffect(() => {
-    if (initialProducts && initialProducts.length > 0) {
-      const mapped = initialProducts.map(p => ({
-        id: p.id || Math.floor(Math.random() * 1000),
-        productName: p.productName || p.name || "Unnamed Product",
-        price: p.price || 0,
-        stock: p.stock !== undefined ? p.stock : (p.quantity || 0),
-        category: p.category || "Uncategorized",
-        brand: p.brand || "Local Mandi",
-        active: p.active !== undefined ? p.active : true,
-        deleted: p.deleted || false
-      }));
-      setProductsList(mapped);
-    } else {
-      // Fallback premium datasets when offline
-      setProductsList([
-        { id: 101, productName: "Fortune Premium Mustard Oil", price: 175, stock: 120, category: "Edible Oils", brand: "Fortune", active: true, deleted: false },
-        { id: 102, productName: "Aashirvaad Shudh Chakki Atta", price: 460, stock: 8, category: "Flour (Atta)", brand: "Aashirvaad", active: true, deleted: false },
-        { id: 103, productName: "Ambika Kashmiri Chili Powder", price: 125, stock: 85, category: "Spices", brand: "Ambika", active: true, deleted: false }
-      ]);
-    }
-  }, [initialProducts]);
+  // useEffect(() => {
+  //   if (initialProducts && initialProducts.length > 0) {
+  //     const mapped = initialProducts.map(p => ({
+  //       id: p.id || Math.floor(Math.random() * 1000),
+  //       productName: p.productName || p.name || "Unnamed Product",
+  //       price: p.price || 0,
+  //       stock: p.stock !== undefined ? p.stock : (p.quantity || 0),
+  //       category: p.category || "Uncategorized",
+  //       brand: p.brand || "Local Mandi",
+  //       active: p.active !== undefined ? p.active : true,
+  //       deleted: p.deleted || false
+  //     }));
+  //     setProductsList(mapped);
+  //   } else {
+  //     // Fallback premium datasets when offline
+  //     setProductsList([
+  //       { id: 101, productName: "Fortune Premium Mustard Oil", price: 175, stock: 120, category: "Edible Oils", brand: "Fortune", active: true, deleted: false },
+  //       { id: 102, productName: "Aashirvaad Shudh Chakki Atta", price: 460, stock: 8, category: "Flour (Atta)", brand: "Aashirvaad", active: true, deleted: false },
+  //       { id: 103, productName: "Ambika Kashmiri Chili Powder", price: 125, stock: 85, category: "Spices", brand: "Ambika", active: true, deleted: false }
+  //     ]);
+  //   }
+  // }, [initialProducts]);
 
   // Fetch product catalog lists, categories, and brands dynamically from Active controller endpoints
+  
   const fetchActiveMetadata = async () => {
     setLoading(true);
     try {
-      const prodData = await api.products.getActive();
-      if (Array.isArray(prodData)) {
-        setProductsList(prodData.map(p => ({
-          id: p.id,
-          productName: p.name || p.productName,
-          price: p.price,
-          stock: p.quantity !== undefined ? p.quantity : p.stock,
-          category: p.category?.name || "General",
-          brand: p.brand?.name || "Standard",
-          active: p.action !== undefined ? p.action : true,
-          deleted: p.deleted || false
-        })));
-      }
+    const fetchProducts = async () => {
+    try {
 
+        setLoading(true);
+
+        const response = await getActiveProducts();
+
+        const products = response.data.data || [];
+
+        setProductsList(products);
+
+    } catch (err) {
+        console.log(err);
+    } finally {
+        setLoading(false);
+    }
+};
       const catData = await api.categories.getActive();
       if (Array.isArray(catData)) {
         setCategoriesList(catData);
@@ -441,10 +452,36 @@ export default function ProductTable({
       setLoading(false);
     }
   };
+const fetchProducts = async () => {
+  try {
+    setLoading(true);
 
-  useEffect(() => {
-    fetchActiveMetadata();
-  }, []);
+    const response = await getActiveProducts();
+
+    const data = response.data.data || response.data;
+
+    const mappedProducts = data.map((p) => ({
+      id: p.id,
+      productName: p.productName || p.name || "",
+      category: p.category?.name || p.category || "",
+      brand: p.brand?.name || p.brand || "",
+      price: p.price || 0,
+      stock: p.stock || p.quantity || 0,
+      deleted: p.deleted || false,
+    }));
+
+    setProductsList(mappedProducts);
+
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to load products", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+useEffect(() => {
+    fetchProducts();
+}, []);
 
   // ━━━━━━━━━━━━━━━━━ 5. CATEGORY ENDPOINTS CRUD ━━━━━━━━━━━━━━━━━
   const handleCategorySubmit = async (e) => {
@@ -595,27 +632,39 @@ export default function ProductTable({
   };
 
   // ━━━━━━━━━━━━━━━━━ 7. PRODUCT CRUD ACTION DISPATCHERS ━━━━━━━━━━━━━━━━━
-  const handleProductDelete = async (id) => {
+const handleProductDelete = async (id) => {
     try {
-      await api.products.softDelete(id);
-      showToast("Product deleted successfully!");
-      fetchActiveMetadata();
-    } catch (err) {
-      setProductsList(productsList.map(p => p.id === id ? { ...p, deleted: true } : p));
-      showToast("Product soft-deleted locally.");
-    }
-  };
 
-  const handleProductRestore = async (id) => {
-    try {
-      await api.products.restore(id);
-      showToast("Product restored successfully!");
-      fetchActiveMetadata();
+        await deleteProduct(id);
+
+        showToast("Product deleted","success");
+
+        fetchProducts();
+
     } catch (err) {
-      setProductsList(productsList.map(p => p.id === id ? { ...p, deleted: false } : p));
-      showToast("Product restored locally.");
+
+        showToast("Delete failed","error");
+
     }
-  };
+};
+
+const handleProductRestore = async (id) => {
+
+    try {
+
+        await restoreProduct(id);
+
+        showToast("Product restored","success");
+
+        fetchProducts();
+
+    } catch (err) {
+
+        showToast("Restore failed","error");
+
+    }
+
+};
 
   // Filtering based on Search Query & Status Filters
   const filteredProducts = productsList.filter(p => {
@@ -648,11 +697,24 @@ export default function ProductTable({
     }`}>
       <div className={isDark ? "dark" : ""}>
         
-        {toast.show && (
+        {/* {toast.show && (
           <div className="fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl bg-emerald-600 text-white font-bold animate-bounce">
             <span>{toast.message}</span>
           </div>
-        )}
+        )} */}
+        {toast.show && (
+    <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() =>
+            setToast({
+                show: false,
+                message: "",
+                type: "success",
+            })
+        }
+    />
+)}
 
         {/* Header banner */}
         <div className="bg-gradient-to-r from-sky-500 via-sky-600 to-indigo-700 rounded-3xl p-6 md:p-8 text-white mb-8 shadow-lg relative overflow-hidden">
