@@ -159,6 +159,7 @@ import {
   getActiveProducts,
   deleteProduct,
   restoreProduct,
+  getDeletedProducts,
 } from "../../api/productApi";
 import {
   Plus,
@@ -179,16 +180,24 @@ import {
 } from "lucide-react";
 import { useNavigate, useInRouterContext } from "react-router-dom";
 import Toast from "../common/Toast";
+import { getDeletedCategories } from "../../api/categoryApi";
+import { getDeletedBrands } from "../../api/brandApi";
+import {
+  getActiveCategories
+} from "../../api/categoryApi";
 
+import {
+  getActiveBrands
+} from "../../api/brandApi";
 export default function ProductTable({
   products: initialProducts = [],
-  onDelete = () => {},
-  onRestore = () => {},
-  onEdit = () => {},
+  onDelete = () => { },
+  onRestore = () => { },
+  onEdit = () => { },
   apiHost = "http://localhost:8080",
   theme = "light"
 }) {
-  
+
   // Safe Router navigation checker to prevent sandbox preview compilation crashes
   let navigate;
   try {
@@ -324,7 +333,7 @@ export default function ProductTable({
 
   // ━━━━━━━━━━━━━━━━━ 2. RELIABLE THEME AUTO DETECTOR ━━━━━━━━━━━━━━━━━
   const [isDark, setIsDark] = useState(theme === "dark");
-  
+
   useEffect(() => {
     const checkTheme = () => {
       const isDarkClass = document.documentElement.classList.contains("dark");
@@ -390,28 +399,29 @@ export default function ProductTable({
   // }, [initialProducts]);
 
   // Fetch product catalog lists, categories, and brands dynamically from Active controller endpoints
-  
+
   const fetchActiveMetadata = async () => {
     setLoading(true);
     try {
-    const fetchProducts = async () => {
-    try {
+      const fetchProducts = async () => {
+        try {
 
-        setLoading(true);
+          setLoading(true);
 
-        const response = await getActiveProducts();
+          const response = await getActiveProducts();
 
-        const products = response.data.data || [];
+          const products = response.data || [];
+          console.log("Fetched products:", products);
+          setProductsList(products);
 
-        setProductsList(products);
-
-    } catch (err) {
-        console.log(err);
-    } finally {
-        setLoading(false);
-    }
-};
-      const catData = await api.categories.getActive();
+        } catch (err) {
+          console.log(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      const response = await getActiveCategories();
+      const catData = response.data;
       if (Array.isArray(catData)) {
         setCategoriesList(catData);
       } else {
@@ -422,7 +432,7 @@ export default function ProductTable({
         ]);
       }
 
-      const brandData = await api.brands.getActive();
+      const brandData = await getActiveBrands();
       if (Array.isArray(brandData)) {
         setBrandsList(brandData);
       } else {
@@ -433,7 +443,10 @@ export default function ProductTable({
         ]);
       }
     } catch (err) {
-      console.warn("Backend server not responding, running with client-side fallback state.");
+      // console.warn("Backend server not responding, running with client-side fallback state.");
+
+      console.error("API Error:", err);
+
       if (categoriesList.length === 0) {
         setCategoriesList([
           { id: 1, name: "Rice & Grains", action: true, deleted: false },
@@ -452,37 +465,155 @@ export default function ProductTable({
       setLoading(false);
     }
   };
-const fetchProducts = async () => {
+  // const fetchProducts = async () => {
+  //   try {
+  //     setLoading(true);
+
+  //     const response = await getActiveProducts();
+
+  //     const data = response.data.data || response.data;
+
+  //     const mappedProducts = data.map((p) => ({
+  //       id: p.id,
+  //       productName: p.productName || p.name || "",
+  //       category: p.category?.name || p.category || "",
+  //       brand: p.brand?.name || p.brand || "",
+  //       price: p.price || 0,
+  //       stock: p.stock || p.quantity || 0,
+  //       deleted: p.deleted || false,
+  //     }));
+
+  //     setProductsList(mappedProducts);
+
+  //   } catch (err) {
+  //     console.error(err);
+  //     showToast("Failed to load products", "error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const fetchProducts = async () => {
+    try {
+
+      setLoading(true);
+const response =
+  statusFilter === "deleted"
+    ? await getDeletedProducts()
+    : await getActiveProducts();
+
+// console.log("Status Filter:", statusFilter);
+// console.log("API Response:", response.data);
+
+      setProductsList(response.data.data);
+
+      const data = response.data.data || [];
+
+      // const mapped = data.map((p) => ({
+      //   id: p.id,
+      //   productName: p.productName || p.name || "",
+      //   category:
+      //     p.category?.categoryName ||
+      //     p.category?.name ||
+      //     p.categoryName ||
+      //     "",
+      //   brand:
+      //     p.brand?.brandName ||
+      //     p.brand?.name ||
+      //     p.brandName ||
+      //     "",
+      //   price: p.price ?? 0,
+      //   stock: p.stock ?? p.quantity ?? 0,
+      //   deleted: p.deleted ?? false,
+      // }));
+
+      const mapped = data.map((p) => ({
+    id: p.id,
+    productName: p.productName || p.name || "",
+    category:
+        p.category?.categoryName ||
+        p.category?.name ||
+        p.categoryName ||
+        "",
+    brand:
+        p.brand?.brandName ||
+        p.brand?.name ||
+        p.brandName ||
+        "",
+    price: p.price ?? 0,
+    stock: p.stock ?? p.quantity ?? 0,
+
+    // ⭐ IMPORTANT
+    deleted: statusFilter === "deleted",
+}));
+
+      setProductsList(mapped);
+
+    } finally {
+      setLoading(false);
+    }
+  };
+const fetchCategories = async () => {
   try {
-    setLoading(true);
+    const response =
+      statusFilter === "deleted"
+        ? await getDeletedCategories()
+        : await getActiveCategories();
 
-    const response = await getActiveProducts();
+    console.log("Category Response:", response);
 
-    const data = response.data.data || response.data;
+    const data = response.data || [];
 
-    const mappedProducts = data.map((p) => ({
-      id: p.id,
-      productName: p.productName || p.name || "",
-      category: p.category?.name || p.category || "",
-      brand: p.brand?.name || p.brand || "",
-      price: p.price || 0,
-      stock: p.stock || p.quantity || 0,
-      deleted: p.deleted || false,
-    }));
-
-    setProductsList(mappedProducts);
-
+    setCategoriesList(
+      data.map((c, index) => ({
+        id: c.id ?? c.sn ?? index,
+        name: c.name,
+        image: c.image,
+        action: c.action,
+        deleted: statusFilter === "deleted",
+      }))
+    );
   } catch (err) {
     console.error(err);
-    showToast("Failed to load products", "error");
-  } finally {
-    setLoading(false);
+    setCategoriesList([]);
   }
 };
+const fetchBrands = async () => {
+  try {
+    const response =
+      statusFilter === "deleted"
+        ? await getDeletedBrands()
+        : await getActiveBrands();
+
+    console.log("Brand Response:", response);
+
+    const data = response.data || [];
+
+    setBrandsList(
+      data.map((b, index) => ({
+        id: b.id ?? b.sn ?? index,
+        name: b.name,
+        categoryId: b.categoryId,
+        categoryName: b.categoryName,
+        image: b.image,
+        action: b.action,
+        isDeleted: statusFilter === "deleted",
+      }))
+    );
+  } catch (err) {
+    console.error(err);
+    setBrandsList([]);
+  }
+};
+
+  // useEffect(() => {
+  //     fetchProducts();
+  // }, []);
+
 useEffect(() => {
     fetchProducts();
-}, []);
-
+    fetchCategories();
+    fetchBrands();
+}, [statusFilter]);
   // ━━━━━━━━━━━━━━━━━ 5. CATEGORY ENDPOINTS CRUD ━━━━━━━━━━━━━━━━━
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
@@ -632,96 +763,108 @@ useEffect(() => {
   };
 
   // ━━━━━━━━━━━━━━━━━ 7. PRODUCT CRUD ACTION DISPATCHERS ━━━━━━━━━━━━━━━━━
-const handleProductDelete = async (id) => {
+  const handleProductDelete = async (id) => {
     try {
 
-        await deleteProduct(id);
+      await deleteProduct(id);
 
-        showToast("Product deleted","success");
+      showToast("Product deleted", "success");
 
-        fetchProducts();
+      fetchProducts();
 
     } catch (err) {
 
-        showToast("Delete failed","error");
+      showToast("Delete failed", "error");
 
     }
-};
+  };
 
-const handleProductRestore = async (id) => {
+  const handleProductRestore = async (id) => {
 
     try {
 
-        await restoreProduct(id);
+      await restoreProduct(id);
 
-        showToast("Product restored","success");
+      showToast("Product restored", "success");
 
-        fetchProducts();
+      fetchProducts();
 
     } catch (err) {
 
-        showToast("Restore failed","error");
+      showToast("Restore failed", "error");
 
     }
 
-};
+  };
 
   // Filtering based on Search Query & Status Filters
-  const filteredProducts = productsList.filter(p => {
-    const matchesSearch = p.productName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.brand.toLowerCase().includes(searchQuery.toLowerCase());
-    if (statusFilter === "active") return matchesSearch && !p.deleted;
-    if (statusFilter === "deleted") return matchesSearch && p.deleted;
+  const filteredProducts = productsList.filter((p) => {
+
+    const productName = (p.productName || "").toLowerCase();
+    const category = (p.category || "").toLowerCase();
+    const brand = (p.brand || "").toLowerCase();
+
+    const search = searchQuery.toLowerCase();
+
+    const matchesSearch =
+      productName.includes(search) ||
+      category.includes(search) ||
+      brand.includes(search);
+
+    if (statusFilter === "active")
+      return matchesSearch && !p.deleted;
+
+    if (statusFilter === "deleted")
+      return matchesSearch && p.deleted;
+
     return matchesSearch;
   });
 
   const filteredCategories = categoriesList.filter(c => {
-    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (c.name || "").toLowerCase().includes(searchQuery.toLowerCase());
     if (statusFilter === "active") return matchesSearch && !c.deleted;
     if (statusFilter === "deleted") return matchesSearch && c.deleted;
     return matchesSearch;
   });
 
   const filteredBrands = brandsList.filter(b => {
-    const matchesSearch = b.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (b.categoryName && b.categoryName.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = (b.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (b.categoryName && b.categoryName.toLowerCase().includes(searchQuery.toLowerCase()));
     if (statusFilter === "active") return matchesSearch && !b.isDeleted;
     if (statusFilter === "deleted") return matchesSearch && b.isDeleted;
     return matchesSearch;
   });
 
   return (
-    <div className={`flex-1 p-4 md:p-8 min-h-screen transition-colors duration-300 ${
-      isDark ? "bg-[#0b1120] text-slate-100 dark" : "bg-slate-50 text-slate-800"
-    }`}>
+    <div className={`flex-1 p-4 md:p-8 min-h-screen transition-colors duration-300 ${isDark ? "bg-[#0b1120] text-slate-100 dark" : "bg-slate-50 text-slate-800"
+      }`}>
       <div className={isDark ? "dark" : ""}>
-        
+
         {/* {toast.show && (
           <div className="fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl bg-emerald-600 text-white font-bold animate-bounce">
             <span>{toast.message}</span>
           </div>
         )} */}
         {toast.show && (
-    <Toast
-        message={toast.message}
-        type={toast.type}
-        onClose={() =>
-            setToast({
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() =>
+              setToast({
                 show: false,
                 message: "",
                 type: "success",
-            })
-        }
-    />
-)}
+              })
+            }
+          />
+        )}
 
         {/* Header banner */}
         <div className="bg-gradient-to-r from-sky-500 via-sky-600 to-indigo-700 rounded-3xl p-6 md:p-8 text-white mb-8 shadow-lg relative overflow-hidden">
           <div className="absolute right-0 top-0 opacity-10 transform translate-x-6 -translate-y-6 pointer-events-none">
             <Package size={220} />
           </div>
-          
+
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5 relative z-10">
             <div>
               <h1 className="text-2xl md:text-3xl font-black tracking-tight">
@@ -767,11 +910,10 @@ const handleProductRestore = async (id) => {
         <div className="flex border-b border-slate-200 dark:border-slate-800 mb-6 gap-2">
           <button
             onClick={() => setActiveTab("products")}
-            className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-              activeTab === "products"
+            className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === "products"
                 ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
                 : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            }`}
+              }`}
           >
             <Package size={16} />
             Products Catalog
@@ -779,11 +921,10 @@ const handleProductRestore = async (id) => {
 
           <button
             onClick={() => setActiveTab("categories")}
-            className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-              activeTab === "categories"
+            className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === "categories"
                 ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
                 : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            }`}
+              }`}
           >
             <Layers size={16} />
             Category Master
@@ -791,11 +932,10 @@ const handleProductRestore = async (id) => {
 
           <button
             onClick={() => setActiveTab("brands")}
-            className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-              activeTab === "brands"
+            className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === "brands"
                 ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
                 : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            }`}
+              }`}
           >
             <Tag size={16} />
             Brands Hub
@@ -803,11 +943,10 @@ const handleProductRestore = async (id) => {
         </div>
 
         {/* Filters Panel */}
-        <div className={`border p-4 mb-6 rounded-2xl shadow transition-all duration-300 ${
-          isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-100"
-        }`}>
+        <div className={`border p-4 mb-6 rounded-2xl shadow transition-all duration-300 ${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-100"
+          }`}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-            
+
             {/* Search inputs */}
             <div className="relative md:col-span-8">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
@@ -818,11 +957,10 @@ const handleProductRestore = async (id) => {
                 placeholder={`Search ${activeTab}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full border rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
-                  isDark 
-                    ? "bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:ring-sky-500/20" 
+                className={`w-full border rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${isDark
+                    ? "bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:ring-sky-500/20"
                     : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-sky-500/20"
-                }`}
+                  }`}
               />
             </div>
 
@@ -831,11 +969,10 @@ const handleProductRestore = async (id) => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 cursor-pointer transition-all ${
-                  isDark 
-                    ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20" 
+                className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 cursor-pointer transition-all ${isDark
+                    ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
                     : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
-                }`}
+                  }`}
               >
                 <option value="all">All Records</option>
                 <option value="active">Active Only</option>
@@ -845,14 +982,13 @@ const handleProductRestore = async (id) => {
 
             {/* Refresh button */}
             <div className="md:col-span-1 flex justify-end">
-              <button 
-                onClick={fetchActiveMetadata} 
+              <button
+                onClick={fetchActiveMetadata}
                 disabled={loading}
-                className={`p-3 rounded-xl border transition flex items-center justify-center w-full md:w-auto ${
-                  isDark 
-                    ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700" 
+                className={`p-3 rounded-xl border transition flex items-center justify-center w-full md:w-auto ${isDark
+                    ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
                     : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
-                }`}
+                  }`}
                 title="Refresh Table Records"
               >
                 <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
@@ -864,18 +1000,16 @@ const handleProductRestore = async (id) => {
 
         {/* ━━━━━━━━━━━━━━━━━ TAB 1: PRODUCTS CATALOG SECTION ━━━━━━━━━━━━━━━━━ */}
         {activeTab === "products" && (
-          <div className={`rounded-3xl shadow-lg border overflow-hidden transition-all duration-300 ${
-            isDark ? "bg-slate-900 border-slate-800/80" : "bg-white border-slate-100"
-          }`}>
+          <div className={`rounded-3xl shadow-lg border overflow-hidden transition-all duration-300 ${isDark ? "bg-slate-900 border-slate-800/80" : "bg-white border-slate-100"
+            }`}>
             <div className={`px-6 py-4 border-b ${isDark ? "border-slate-800" : "border-slate-100"}`}>
               <h2 className="font-bold text-lg">Marketplace Catalog Inventory</h2>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className={`text-xs font-bold uppercase tracking-wider ${
-                  isDark ? "bg-slate-800/60 text-slate-400" : "bg-slate-50 text-slate-500"
-                }`}>
+                <thead className={`text-xs font-bold uppercase tracking-wider ${isDark ? "bg-slate-800/60 text-slate-400" : "bg-slate-50 text-slate-500"
+                  }`}>
                   <tr>
                     <th className="px-6 py-4 text-left">Product Details</th>
                     <th className="px-6 py-4 text-left">Category</th>
@@ -888,14 +1022,12 @@ const handleProductRestore = async (id) => {
 
                 <tbody className={`divide-y text-sm ${isDark ? "divide-slate-800" : "divide-slate-100"}`}>
                   {filteredProducts.map((p) => (
-                    <tr key={p.id} className={`transition ${
-                      isDark ? "hover:bg-slate-800/30 text-slate-100" : "hover:bg-slate-50 text-slate-800"
-                    } ${p.deleted ? "opacity-55" : ""}`}>
+                    <tr key={p.id} className={`transition ${isDark ? "hover:bg-slate-800/30 text-slate-100" : "hover:bg-slate-50 text-slate-800"
+                      } ${p.deleted ? "opacity-55" : ""}`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sky-500 border ${
-                            isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"
-                          }`}>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sky-500 border ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"
+                            }`}>
                             {p.productName.substring(0, 1).toUpperCase()}
                           </div>
                           <div>
@@ -912,11 +1044,10 @@ const handleProductRestore = async (id) => {
                       </td>
                       <td className="px-6 py-4 font-black text-emerald-500 text-base">₹{p.price}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                          p.stock > 10 
-                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" 
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${p.stock > 10
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
                             : "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"
-                        }`}>
+                          }`}>
                           {p.stock} Units
                         </span>
                       </td>
@@ -926,9 +1057,8 @@ const handleProductRestore = async (id) => {
                             <>
                               <button
                                 onClick={() => onEdit(p)}
-                                className={`p-2 rounded-xl transition-all active:scale-95 ${
-                                  isDark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/25" : "bg-sky-50 text-sky-600 hover:bg-sky-100"
-                                }`}
+                                className={`p-2 rounded-xl transition-all active:scale-95 ${isDark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/25" : "bg-sky-50 text-sky-600 hover:bg-sky-100"
+                                  }`}
                                 title="Edit Product"
                               >
                                 <Pencil size={15} />
@@ -936,9 +1066,8 @@ const handleProductRestore = async (id) => {
 
                               <button
                                 onClick={() => handleProductDelete(p.id)}
-                                className={`p-2 rounded-xl transition-all active:scale-95 ${
-                                  isDark ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/25" : "bg-rose-50 text-rose-600 hover:bg-rose-100"
-                                }`}
+                                className={`p-2 rounded-xl transition-all active:scale-95 ${isDark ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/25" : "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                                  }`}
                                 title="Delete Product"
                               >
                                 <Trash2 size={15} />
@@ -947,9 +1076,8 @@ const handleProductRestore = async (id) => {
                           ) : (
                             <button
                               onClick={() => handleProductRestore(p.id)}
-                              className={`p-2 rounded-xl transition-all active:scale-95 ${
-                                isDark ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                              }`}
+                              className={`p-2 rounded-xl transition-all active:scale-95 ${isDark ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                }`}
                               title="Restore Product"
                             >
                               <RotateCcw size={15} />
@@ -974,18 +1102,16 @@ const handleProductRestore = async (id) => {
 
         {/* ━━━━━━━━━━━━━━━━━ TAB 2: CATEGORY HUB SECTION ━━━━━━━━━━━━━━━━━ */}
         {activeTab === "categories" && (
-          <div className={`rounded-3xl shadow-lg border overflow-hidden transition-all duration-300 ${
-            isDark ? "bg-slate-900 border-slate-800/80" : "bg-white border-slate-100"
-          }`}>
+          <div className={`rounded-3xl shadow-lg border overflow-hidden transition-all duration-300 ${isDark ? "bg-slate-900 border-slate-800/80" : "bg-white border-slate-100"
+            }`}>
             <div className={`px-6 py-4 border-b ${isDark ? "border-slate-800" : "border-slate-100"}`}>
               <h2 className="font-bold text-lg">Category Mapping Directory</h2>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className={`text-xs font-bold uppercase tracking-wider ${
-                  isDark ? "bg-slate-800/60 text-slate-400" : "bg-slate-50 text-slate-500"
-                }`}>
+                <thead className={`text-xs font-bold uppercase tracking-wider ${isDark ? "bg-slate-800/60 text-slate-400" : "bg-slate-50 text-slate-500"
+                  }`}>
                   <tr>
                     <th className="px-6 py-4">ID</th>
                     <th className="px-6 py-4">Category Name</th>
@@ -996,14 +1122,12 @@ const handleProductRestore = async (id) => {
 
                 <tbody className={`divide-y text-sm ${isDark ? "divide-slate-800" : "divide-slate-100"}`}>
                   {filteredCategories.map((c) => (
-                    <tr key={c.id} className={`transition ${
-                      isDark ? "hover:bg-slate-800/30 text-slate-100" : "hover:bg-slate-50 text-slate-800"
-                    } ${c.deleted ? "opacity-55" : ""}`}>
+                    <tr key={c.id} className={`transition ${isDark ? "hover:bg-slate-800/30 text-slate-100" : "hover:bg-slate-50 text-slate-800"
+                      } ${c.deleted ? "opacity-55" : ""}`}>
                       <td className="px-6 py-4 font-mono text-slate-400">#{c.id}</td>
                       <td className="px-6 py-4 font-bold flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sky-500 text-xs ${
-                          isDark ? "bg-slate-800 shadow-inner" : "bg-slate-100 shadow-inner"
-                        }`}>
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sky-500 text-xs ${isDark ? "bg-slate-800 shadow-inner" : "bg-slate-100 shadow-inner"
+                          }`}>
                           {c.name.substring(0, 2).toUpperCase()}
                         </div>
                         <span>{c.name}</span>
@@ -1011,11 +1135,10 @@ const handleProductRestore = async (id) => {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => toggleCategoryStatus(c.id, c.action)}
-                          className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${
-                            c.action 
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" 
+                          className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${c.action
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
                               : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
-                          }`}
+                            }`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${c.action ? "bg-emerald-500" : "bg-amber-500"}`}></span>
                           {c.action ? "Active" : "Inactive"}
@@ -1027,18 +1150,16 @@ const handleProductRestore = async (id) => {
                             <>
                               <button
                                 onClick={() => setCategoryModal({ open: true, isEdit: true, id: c.id, name: c.name, image: null })}
-                                className={`p-2 rounded-xl transition ${
-                                  isDark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/25" : "bg-sky-50 text-sky-600 hover:bg-sky-100"
-                                }`}
+                                className={`p-2 rounded-xl transition ${isDark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/25" : "bg-sky-50 text-sky-600 hover:bg-sky-100"
+                                  }`}
                                 title="Edit Category"
                               >
                                 <Pencil size={15} />
                               </button>
                               <button
                                 onClick={() => deleteCategory(c.id)}
-                                className={`p-2 rounded-xl transition ${
-                                  isDark ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/25" : "bg-rose-50 text-rose-600 hover:bg-rose-100"
-                                }`}
+                                className={`p-2 rounded-xl transition ${isDark ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/25" : "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                                  }`}
                                 title="Delete Category"
                               >
                                 <Trash2 size={15} />
@@ -1047,9 +1168,8 @@ const handleProductRestore = async (id) => {
                           ) : (
                             <button
                               onClick={() => restoreCategory(c.id)}
-                              className={`p-2 rounded-xl transition ${
-                                isDark ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                              }`}
+                              className={`p-2 rounded-xl transition ${isDark ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                }`}
                               title="Restore Category"
                             >
                               <RotateCcw size={15} />
@@ -1074,18 +1194,16 @@ const handleProductRestore = async (id) => {
 
         {/* ━━━━━━━━━━━━━━━━━ TAB 3: BRAND HUB SECTION ━━━━━━━━━━━━━━━━━ */}
         {activeTab === "brands" && (
-          <div className={`rounded-3xl shadow-lg border overflow-hidden transition-all duration-300 ${
-            isDark ? "bg-slate-900 border-slate-800/80" : "bg-white border-slate-100"
-          }`}>
+          <div className={`rounded-3xl shadow-lg border overflow-hidden transition-all duration-300 ${isDark ? "bg-slate-900 border-slate-800/80" : "bg-white border-slate-100"
+            }`}>
             <div className={`px-6 py-4 border-b ${isDark ? "border-slate-800" : "border-slate-100"}`}>
               <h2 className="font-bold text-lg">Active Brands Directory</h2>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className={`text-xs font-bold uppercase tracking-wider ${
-                  isDark ? "bg-slate-800/60 text-slate-400" : "bg-slate-50 text-slate-500"
-                }`}>
+                <thead className={`text-xs font-bold uppercase tracking-wider ${isDark ? "bg-slate-800/60 text-slate-400" : "bg-slate-50 text-slate-500"
+                  }`}>
                   <tr>
                     <th className="px-6 py-4">ID</th>
                     <th className="px-6 py-4">Brand</th>
@@ -1097,14 +1215,12 @@ const handleProductRestore = async (id) => {
 
                 <tbody className={`divide-y text-sm ${isDark ? "divide-slate-800" : "divide-slate-100"}`}>
                   {filteredBrands.map((b) => (
-                    <tr key={b.id} className={`transition ${
-                      isDark ? "hover:bg-slate-800/30 text-slate-100" : "hover:bg-slate-50 text-slate-800"
-                    } ${b.isDeleted ? "opacity-55" : ""}`}>
+                    <tr key={b.id} className={`transition ${isDark ? "hover:bg-slate-800/30 text-slate-100" : "hover:bg-slate-50 text-slate-800"
+                      } ${b.isDeleted ? "opacity-55" : ""}`}>
                       <td className="px-6 py-4 font-mono text-slate-400">#{b.id}</td>
                       <td className="px-6 py-4 font-bold flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-indigo-500 text-xs ${
-                          isDark ? "bg-slate-800 shadow-inner" : "bg-slate-100 shadow-inner"
-                        }`}>
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-indigo-500 text-xs ${isDark ? "bg-slate-800 shadow-inner" : "bg-slate-100 shadow-inner"
+                          }`}>
                           {b.name.substring(0, 2).toUpperCase()}
                         </div>
                         <span>{b.name}</span>
@@ -1115,11 +1231,10 @@ const handleProductRestore = async (id) => {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => toggleBrandStatus(b.id, b.action)}
-                          className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${
-                            b.action 
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" 
+                          className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${b.action
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
                               : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
-                          }`}
+                            }`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${b.action ? "bg-emerald-500" : "bg-amber-500"}`}></span>
                           {b.action ? "Active" : "Inactive"}
@@ -1131,18 +1246,16 @@ const handleProductRestore = async (id) => {
                             <>
                               <button
                                 onClick={() => setBrandModal({ open: true, isEdit: true, id: b.id, name: b.name, categoryId: b.categoryId || "1", image: null })}
-                                className={`p-2 rounded-xl transition ${
-                                  isDark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/25" : "bg-sky-50 text-sky-600 hover:bg-sky-100"
-                                }`}
+                                className={`p-2 rounded-xl transition ${isDark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/25" : "bg-sky-50 text-sky-600 hover:bg-sky-100"
+                                  }`}
                                 title="Edit Brand"
                               >
                                 <Pencil size={15} />
                               </button>
                               <button
                                 onClick={() => deleteBrand(b.id)}
-                                className={`p-2 rounded-xl transition ${
-                                  isDark ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/25" : "bg-rose-50 text-rose-600 hover:bg-rose-100"
-                                }`}
+                                className={`p-2 rounded-xl transition ${isDark ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/25" : "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                                  }`}
                                 title="Delete Brand"
                               >
                                 <Trash2 size={15} />
@@ -1151,9 +1264,8 @@ const handleProductRestore = async (id) => {
                           ) : (
                             <button
                               onClick={() => restoreBrand(b.id)}
-                              className={`p-2 rounded-xl transition ${
-                                isDark ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                              }`}
+                              className={`p-2 rounded-xl transition ${isDark ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                }`}
                               title="Restore Brand"
                             >
                               <RotateCcw size={15} />
@@ -1179,15 +1291,13 @@ const handleProductRestore = async (id) => {
         {/* ━━━━━━━━━━━━━━━━━ CATEGORY MODALS FORM ━━━━━━━━━━━━━━━━━ */}
         {categoryModal.open && (
           <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div className={`border rounded-3xl w-full max-w-lg p-6 shadow-2xl relative transition-all duration-300 ${
-              isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-100 text-slate-800"
-            }`}>
-              
-              <button 
+            <div className={`border rounded-3xl w-full max-w-lg p-6 shadow-2xl relative transition-all duration-300 ${isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-100 text-slate-800"
+              }`}>
+
+              <button
                 onClick={() => { setCategoryModal({ open: false, isEdit: false, id: null, name: "", image: null }); setImagePreview(null); }}
-                className={`absolute top-4 right-4 p-1.5 rounded-xl transition ${
-                  isDark ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                }`}
+                className={`absolute top-4 right-4 p-1.5 rounded-xl transition ${isDark ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                  }`}
               >
                 <X size={18} />
               </button>
@@ -1206,20 +1316,18 @@ const handleProductRestore = async (id) => {
                     value={categoryModal.name}
                     onChange={(e) => setCategoryModal({ ...categoryModal, name: e.target.value })}
                     placeholder="e.g. Edible Oils"
-                    className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all shadow-inner ${
-                      isDark 
-                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20" 
+                    className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all shadow-inner ${isDark
+                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
                         : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
-                    }`}
+                      }`}
                   />
                 </div>
 
                 <div>
                   <label className="font-bold text-xs block mb-1 text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category Image</label>
                   {!imagePreview ? (
-                    <label className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                      isDark ? "border-slate-700 hover:bg-slate-800/40" : "border-slate-200 hover:bg-slate-50"
-                    }`}>
+                    <label className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all ${isDark ? "border-slate-700 hover:bg-slate-800/40" : "border-slate-200 hover:bg-slate-50"
+                      }`}>
                       <UploadCloud size={28} className="text-sky-500 mb-1" />
                       <span className="text-xs font-bold">Click to upload file</span>
                       <input
@@ -1230,14 +1338,13 @@ const handleProductRestore = async (id) => {
                       />
                     </label>
                   ) : (
-                    <div className={`flex items-center justify-between border p-3 rounded-2xl ${
-                      isDark ? "border-slate-800 bg-slate-800/50" : "border-slate-100 bg-slate-50"
-                    }`}>
+                    <div className={`flex items-center justify-between border p-3 rounded-2xl ${isDark ? "border-slate-800 bg-slate-800/50" : "border-slate-100 bg-slate-50"
+                      }`}>
                       <div className="flex items-center gap-3">
                         <img src={imagePreview} alt="Preview" className="w-12 h-12 object-cover rounded-xl shadow-md border" />
                         <p className="text-xs font-bold">Ready to dispatch</p>
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => { e.preventDefault(); setImagePreview(null); setCategoryModal(prev => ({ ...prev, image: null })); }}
                         className="p-1.5 bg-rose-100 dark:bg-rose-500/10 text-rose-500 rounded-xl hover:scale-95 transition flex items-center justify-center"
                       >
@@ -1251,9 +1358,8 @@ const handleProductRestore = async (id) => {
                   <button
                     type="button"
                     onClick={() => { setCategoryModal({ open: false, isEdit: false, id: null, name: "", image: null }); setImagePreview(null); }}
-                    className={`px-4 py-2 text-xs font-black rounded-xl transition ${
-                      isDark ? "bg-slate-800 text-slate-300 hover:bg-slate-750" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
+                    className={`px-4 py-2 text-xs font-black rounded-xl transition ${isDark ? "bg-slate-800 text-slate-300 hover:bg-slate-750" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
                   >
                     Cancel
                   </button>
@@ -1274,15 +1380,13 @@ const handleProductRestore = async (id) => {
         {/* ━━━━━━━━━━━━━━━━━ BRAND MODALS FORM ━━━━━━━━━━━━━━━━━ */}
         {brandModal.open && (
           <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div className={`border rounded-3xl w-full max-w-lg p-6 shadow-2xl relative transition-all duration-300 ${
-              isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-100 text-slate-800"
-            }`}>
-              
-              <button 
+            <div className={`border rounded-3xl w-full max-w-lg p-6 shadow-2xl relative transition-all duration-300 ${isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-100 text-slate-800"
+              }`}>
+
+              <button
                 onClick={() => { setBrandModal({ open: false, isEdit: false, id: null, name: "", categoryId: "", image: null }); setImagePreview(null); }}
-                className={`absolute top-4 right-4 p-1.5 rounded-xl transition ${
-                  isDark ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                }`}
+                className={`absolute top-4 right-4 p-1.5 rounded-xl transition ${isDark ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                  }`}
               >
                 <X size={18} />
               </button>
@@ -1301,11 +1405,10 @@ const handleProductRestore = async (id) => {
                     value={brandModal.name}
                     onChange={(e) => setBrandModal({ ...brandModal, name: e.target.value })}
                     placeholder="e.g. Fortune"
-                    className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all shadow-inner ${
-                      isDark 
-                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20" 
+                    className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all shadow-inner ${isDark
+                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
                         : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
-                    }`}
+                      }`}
                   />
                 </div>
 
@@ -1315,11 +1418,10 @@ const handleProductRestore = async (id) => {
                     required
                     value={brandModal.categoryId}
                     onChange={(e) => setBrandModal({ ...brandModal, categoryId: e.target.value })}
-                    className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 cursor-pointer transition-all shadow-inner ${
-                      isDark 
-                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20" 
+                    className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 cursor-pointer transition-all shadow-inner ${isDark
+                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
                         : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
-                    }`}
+                      }`}
                   >
                     <option value="">Select Category</option>
                     {categoriesList.map(c => (
@@ -1331,9 +1433,8 @@ const handleProductRestore = async (id) => {
                 <div>
                   <label className="font-bold text-xs block mb-1 text-slate-500 dark:text-slate-400 uppercase tracking-wider">Brand Logo Image</label>
                   {!imagePreview ? (
-                    <label className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                      isDark ? "border-slate-700 hover:bg-slate-800/40" : "border-slate-200 hover:bg-slate-50"
-                    }`}>
+                    <label className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all ${isDark ? "border-slate-700 hover:bg-slate-800/40" : "border-slate-200 hover:bg-slate-50"
+                      }`}>
                       <UploadCloud size={28} className="text-sky-500 mb-1" />
                       <span className="text-xs font-bold">Click to upload file</span>
                       <input
@@ -1344,14 +1445,13 @@ const handleProductRestore = async (id) => {
                       />
                     </label>
                   ) : (
-                    <div className={`flex items-center justify-between border p-3 rounded-2xl ${
-                      isDark ? "border-slate-800 bg-slate-800/50" : "border-slate-100 bg-slate-50"
-                    }`}>
+                    <div className={`flex items-center justify-between border p-3 rounded-2xl ${isDark ? "border-slate-800 bg-slate-800/50" : "border-slate-100 bg-slate-50"
+                      }`}>
                       <div className="flex items-center gap-3">
                         <img src={imagePreview} alt="Preview" className="w-12 h-12 object-cover rounded-xl shadow-md border animate-fade-in" />
                         <p className="text-xs font-bold">Ready to dispatch</p>
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => { e.preventDefault(); setImagePreview(null); setBrandModal(prev => ({ ...prev, image: null })); }}
                         className="p-1.5 bg-rose-100 dark:bg-rose-500/10 text-rose-500 rounded-xl hover:scale-95 transition flex items-center justify-center"
                       >
@@ -1365,9 +1465,8 @@ const handleProductRestore = async (id) => {
                   <button
                     type="button"
                     onClick={() => { setBrandModal({ open: false, isEdit: false, id: null, name: "", categoryId: "", image: null }); setImagePreview(null); }}
-                    className={`px-4 py-2 text-xs font-black rounded-xl transition ${
-                      isDark ? "bg-slate-800 text-slate-300 hover:bg-slate-750" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
+                    className={`px-4 py-2 text-xs font-black rounded-xl transition ${isDark ? "bg-slate-800 text-slate-300 hover:bg-slate-750" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
                   >
                     Cancel
                   </button>

@@ -218,8 +218,10 @@ import React, { useState } from "react";
 import { ArrowLeft, Save, UploadCloud, X, Package, Layers, Tag, DollarSign, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
-
+import { getActiveCategories } from "../../api/categoryApi";
+import { getActiveBrands } from "../../api/brandApi";
 import { addProduct } from "../../api/productApi";
+import { useEffect } from "react";  
 
 export default function ProductAdd({ onSubmit }) {
   const navigate = useNavigate();
@@ -229,6 +231,8 @@ const [toast, setToast] = useState({
   type: "success",
 });
   // ૧. સાઇડબાર અને થીમ કંટ્રોલ સ્ટેટ્સ
+  const [categories, setCategories] = useState([]);
+const [brands, setBrands] = useState([]);
   const [activeTab, setActiveTab] = useState("products");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -236,6 +240,26 @@ const [toast, setToast] = useState({
 
   // ૨. API કોલ અને લોડિંગ સ્ટેટ 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+  fetchDropdowns();
+}, []);
+
+const fetchDropdowns = async () => {
+  try {
+    const categoryRes = await getActiveCategories();
+    const brandRes = await getActiveBrands();
+
+    setCategories(categoryRes.data);
+    setBrands(brandRes.data);
+
+    console.log(categoryRes.data);
+    console.log(brandRes.data);
+
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   // ૩. પ્રોડક્ટ ફોર્મ ડેટા સ્ટેટ
   const [product, setProduct] = useState({
@@ -499,10 +523,16 @@ const handleSubmit = async (e) => {
                   onChange={handleChange}
                   className="w-full mt-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white disabled:bg-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm cursor-pointer"
                 >
-                  <option value="">Select Category</option>
-                  <option value="1">Rice & Grains</option>
-                  <option value="2">Edible Oils</option>
-                  <option value="3">Pure Spices</option>
+             <option value="">Select Category</option>
+
+{categories.map((category) => (
+  <option
+    key={category.sn}
+    value={category.sn}
+  >
+    {category.name}
+  </option>
+))}
                 </select>
               </div>
 
@@ -518,10 +548,16 @@ const handleSubmit = async (e) => {
                   onChange={handleChange}
                   className="w-full mt-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white disabled:bg-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm cursor-pointer"
                 >
-                  <option value="">Select Brand</option>
-                  <option value="1">Fortune</option>
-                  <option value="2">Aashirvaad</option>
-                  <option value="3">Ambika</option>
+               <option value="">Select Brand</option>
+
+{brands.map((brand) => (
+  <option
+    key={brand.id}
+    value={brand.id}
+  >
+    {brand.name}
+  </option>
+))}
                 </select>
               </div>
             </div>
