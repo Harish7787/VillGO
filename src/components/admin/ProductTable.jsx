@@ -178,17 +178,27 @@ import {
   ToggleLeft,
   ToggleRight
 } from "lucide-react";
+import {
+    getActiveBrands,
+    getDeletedBrands,
+    createBrand,
+    updateBrand,
+    deleteBrand,
+    restoreBrand,
+    changeBrandAction
+} from "../../api/brandApi";
+import {
+    getActiveCategories,
+    getDeletedCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    restoreCategory,
+    changeCategoryAction
+} from "../../api/categoryApi";
 import { useNavigate, useInRouterContext } from "react-router-dom";
 import Toast from "../common/Toast";
-import { getDeletedCategories } from "../../api/categoryApi";
-import { getDeletedBrands } from "../../api/brandApi";
-import {
-  getActiveCategories
-} from "../../api/categoryApi";
 
-import {
-  getActiveBrands
-} from "../../api/brandApi";
 export default function ProductTable({
   products: initialProducts = [],
   onDelete = () => { },
@@ -213,123 +223,6 @@ export default function ProductTable({
     };
   }
 
-  // ━━━━━━━━━━━━━━━━━ 1. SELF-CONTAINED BACKEND API MAPPINGS ━━━━━━━━━━━━━━━━━
-  // Defined locally using apiHost state to prevent any unresolved "./api" import errors during build
-  // const api = {
-  //   categories: {
-  //     getActive: async () => {
-  //       const res = await fetch(`${apiHost}/api/categories/active`);
-  //       if (!res.ok) throw new Error("Network response was not ok");
-  //       return res.json();
-  //     },
-  //     create: async (formData) => {
-  //       const res = await fetch(`${apiHost}/api/categories/add`, {
-  //         method: "POST",
-  //         body: formData
-  //       });
-  //       if (!res.ok) throw new Error("Failed to create category");
-  //       return res.json();
-  //     },
-  //     update: async (id, formData) => {
-  //       const res = await fetch(`${apiHost}/api/categories/update/${id}`, {
-  //         method: "PUT",
-  //         body: formData
-  //       });
-  //       if (!res.ok) throw new Error("Failed to update category");
-  //       return res.json();
-  //     },
-  //     changeAction: async (id, action) => {
-  //       const res = await fetch(`${apiHost}/api/categories/action/${id}`, {
-  //         method: "PUT",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ action })
-  //       });
-  //       if (!res.ok) throw new Error("Failed to change action status");
-  //       return res.json();
-  //     },
-  //     softDelete: async (id) => {
-  //       const res = await fetch(`${apiHost}/api/categories/softdelete/${id}`, {
-  //         method: "DELETE"
-  //       });
-  //       if (!res.ok) throw new Error("Failed to delete category");
-  //       return res.json();
-  //     },
-  //     restore: async (id) => {
-  //       const res = await fetch(`${apiHost}/api/categories/restore/${id}`, {
-  //         method: "PUT"
-  //       });
-  //       if (!res.ok) throw new Error("Failed to restore category");
-  //       return res.json();
-  //     }
-  //   },
-  //   brands: {
-  //     getActive: async () => {
-  //       const res = await fetch(`${apiHost}/api/brands/active`);
-  //       if (!res.ok) throw new Error("Network response was not ok");
-  //       return res.json();
-  //     },
-  //     create: async (formData) => {
-  //       const res = await fetch(`${apiHost}/api/brands`, {
-  //         method: "POST",
-  //         body: formData
-  //       });
-  //       if (!res.ok) throw new Error("Failed to create brand");
-  //       return res.json();
-  //     },
-  //     update: async (id, formData) => {
-  //       const res = await fetch(`${apiHost}/api/brands/update/${id}`, {
-  //         method: "PUT",
-  //         body: formData
-  //       });
-  //       if (!res.ok) throw new Error("Failed to update brand");
-  //       return res.json();
-  //     },
-  //     changeAction: async (id, action) => {
-  //       const res = await fetch(`${apiHost}/api/brands/action/${id}`, {
-  //         method: "PUT",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ action })
-  //       });
-  //       if (!res.ok) throw new Error("Failed to change action status");
-  //       return res.json();
-  //     },
-  //     softDelete: async (id) => {
-  //       const res = await fetch(`${apiHost}/api/brands/soft-delete/${id}`, {
-  //         method: "DELETE"
-  //       });
-  //       if (!res.ok) throw new Error("Failed to delete brand");
-  //       return res.json();
-  //     },
-  //     restore: async (id) => {
-  //       const res = await fetch(`${apiHost}/api/brands/restore/${id}`, {
-  //         method: "PUT"
-  //       });
-  //       if (!res.ok) throw new Error("Failed to restore brand");
-  //       return res.json();
-  //     }
-  //   },
-  //   products: {
-  //     getActive: async () => {
-  //       const res = await fetch(`${apiHost}/api/products/active`);
-  //       if (!res.ok) throw new Error("Failed to fetch products");
-  //       return res.json();
-  //     },
-  //     softDelete: async (id) => {
-  //       const res = await fetch(`${apiHost}/api/products/soft-delete/${id}`, {
-  //         method: "DELETE"
-  //       });
-  //       if (!res.ok) throw new Error("Failed to delete product");
-  //       return res.json();
-  //     },
-  //     restore: async (id) => {
-  //       const res = await fetch(`${apiHost}/api/products/restore/${id}`, {
-  //         method: "PUT"
-  //       });
-  //       if (!res.ok) throw new Error("Failed to restore product");
-  //       return res.json();
-  //     }
-  //   }
-  // };
 
   // ━━━━━━━━━━━━━━━━━ 2. RELIABLE THEME AUTO DETECTOR ━━━━━━━━━━━━━━━━━
   const [isDark, setIsDark] = useState(theme === "dark");
@@ -374,32 +267,6 @@ export default function ProductTable({
   const [brandModal, setBrandModal] = useState({ open: false, isEdit: false, id: null, name: "", categoryId: "", image: null });
   const [imagePreview, setImagePreview] = useState(null);
 
-  // Sync products prop with internal productsList safely
-  // useEffect(() => {
-  //   if (initialProducts && initialProducts.length > 0) {
-  //     const mapped = initialProducts.map(p => ({
-  //       id: p.id || Math.floor(Math.random() * 1000),
-  //       productName: p.productName || p.name || "Unnamed Product",
-  //       price: p.price || 0,
-  //       stock: p.stock !== undefined ? p.stock : (p.quantity || 0),
-  //       category: p.category || "Uncategorized",
-  //       brand: p.brand || "Local Mandi",
-  //       active: p.active !== undefined ? p.active : true,
-  //       deleted: p.deleted || false
-  //     }));
-  //     setProductsList(mapped);
-  //   } else {
-  //     // Fallback premium datasets when offline
-  //     setProductsList([
-  //       { id: 101, productName: "Fortune Premium Mustard Oil", price: 175, stock: 120, category: "Edible Oils", brand: "Fortune", active: true, deleted: false },
-  //       { id: 102, productName: "Aashirvaad Shudh Chakki Atta", price: 460, stock: 8, category: "Flour (Atta)", brand: "Aashirvaad", active: true, deleted: false },
-  //       { id: 103, productName: "Ambika Kashmiri Chili Powder", price: 125, stock: 85, category: "Spices", brand: "Ambika", active: true, deleted: false }
-  //     ]);
-  //   }
-  // }, [initialProducts]);
-
-  // Fetch product catalog lists, categories, and brands dynamically from Active controller endpoints
-
   const fetchActiveMetadata = async () => {
     setLoading(true);
     try {
@@ -436,11 +303,7 @@ export default function ProductTable({
       if (Array.isArray(brandData)) {
         setBrandsList(brandData);
       } else {
-        setBrandsList([
-          { id: 1, name: "Fortune", action: true, isDeleted: false, categoryName: "Edible Oils" },
-          { id: 2, name: "Aashirvaad", action: true, isDeleted: false, categoryName: "Rice & Grains" },
-          { id: 3, name: "Ambika", action: true, isDeleted: false, categoryName: "Spices" }
-        ]);
+        alert("Brand data is not an array. Using fallback data.");
       }
     } catch (err) {
       // console.warn("Backend server not responding, running with client-side fallback state.");
@@ -465,86 +328,44 @@ export default function ProductTable({
       setLoading(false);
     }
   };
-  // const fetchProducts = async () => {
-  //   try {
-  //     setLoading(true);
 
-  //     const response = await getActiveProducts();
-
-  //     const data = response.data.data || response.data;
-
-  //     const mappedProducts = data.map((p) => ({
-  //       id: p.id,
-  //       productName: p.productName || p.name || "",
-  //       category: p.category?.name || p.category || "",
-  //       brand: p.brand?.name || p.brand || "",
-  //       price: p.price || 0,
-  //       stock: p.stock || p.quantity || 0,
-  //       deleted: p.deleted || false,
-  //     }));
-
-  //     setProductsList(mappedProducts);
-
-  //   } catch (err) {
-  //     console.error(err);
-  //     showToast("Failed to load products", "error");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const fetchProducts = async () => {
     try {
 
       setLoading(true);
-const response =
-  statusFilter === "deleted"
-    ? await getDeletedProducts()
-    : await getActiveProducts();
+      const response =
+        statusFilter === "deleted"
+          ? await getDeletedProducts()
+          : await getActiveProducts();
 
-// console.log("Status Filter:", statusFilter);
-// console.log("API Response:", response.data);
+      // console.log("Status Filter:", statusFilter);
+      // console.log("API Response:", response.data);
 
       setProductsList(response.data.data);
 
       const data = response.data.data || [];
 
-      // const mapped = data.map((p) => ({
-      //   id: p.id,
-      //   productName: p.productName || p.name || "",
-      //   category:
-      //     p.category?.categoryName ||
-      //     p.category?.name ||
-      //     p.categoryName ||
-      //     "",
-      //   brand:
-      //     p.brand?.brandName ||
-      //     p.brand?.name ||
-      //     p.brandName ||
-      //     "",
-      //   price: p.price ?? 0,
-      //   stock: p.stock ?? p.quantity ?? 0,
-      //   deleted: p.deleted ?? false,
-      // }));
+
 
       const mapped = data.map((p) => ({
-    id: p.id,
-    productName: p.productName || p.name || "",
-    category:
-        p.category?.categoryName ||
-        p.category?.name ||
-        p.categoryName ||
-        "",
-    brand:
-        p.brand?.brandName ||
-        p.brand?.name ||
-        p.brandName ||
-        "",
-    price: p.price ?? 0,
-    stock: p.stock ?? p.quantity ?? 0,
+        id: p.id,
+        productName: p.productName || p.name || "",
+        category:
+          p.category?.categoryName ||
+          p.category?.name ||
+          p.categoryName ||
+          "",
+        brand:
+          p.brand?.brandName ||
+          p.brand?.name ||
+          p.brandName ||
+          "",
+        price: p.price ?? 0,
+        stock: p.stock ?? p.quantity ?? 0,
 
-    // ⭐ IMPORTANT
-    deleted: statusFilter === "deleted",
-}));
+        // ⭐ IMPORTANT
+        deleted: statusFilter === "deleted",
+      }));
 
       setProductsList(mapped);
 
@@ -552,103 +373,120 @@ const response =
       setLoading(false);
     }
   };
-const fetchCategories = async () => {
-  try {
-    const response =
-      statusFilter === "deleted"
-        ? await getDeletedCategories()
-        : await getActiveCategories();
-
-    console.log("Category Response:", response);
-
-    const data = response.data || [];
-
-    setCategoriesList(
-      data.map((c, index) => ({
-        id: c.id ?? c.sn ?? index,
-        name: c.name,
-        image: c.image,
-        action: c.action,
-        deleted: statusFilter === "deleted",
-      }))
-    );
-  } catch (err) {
-    console.error(err);
-    setCategoriesList([]);
-  }
-};
-const fetchBrands = async () => {
-  try {
-    const response =
-      statusFilter === "deleted"
-        ? await getDeletedBrands()
-        : await getActiveBrands();
-
-    console.log("Brand Response:", response);
-
-    const data = response.data || [];
-
-    setBrandsList(
-      data.map((b, index) => ({
-        id: b.id ?? b.sn ?? index,
-        name: b.name,
-        categoryId: b.categoryId,
-        categoryName: b.categoryName,
-        image: b.image,
-        action: b.action,
-        isDeleted: statusFilter === "deleted",
-      }))
-    );
-  } catch (err) {
-    console.error(err);
-    setBrandsList([]);
-  }
-};
-
-  // useEffect(() => {
-  //     fetchProducts();
-  // }, []);
-
-useEffect(() => {
-    fetchProducts();
-    fetchCategories();
-    fetchBrands();
-}, [statusFilter]);
-  // ━━━━━━━━━━━━━━━━━ 5. CATEGORY ENDPOINTS CRUD ━━━━━━━━━━━━━━━━━
-  const handleCategorySubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const fetchCategories = async () => {
     try {
-      const formData = new FormData();
-      formData.append("name", categoryModal.name);
-      if (categoryModal.image) {
-        formData.append("image", categoryModal.image);
-      }
+      const response =
+        statusFilter === "deleted"
+          ? await getDeletedCategories()
+          : await getActiveCategories();
 
-      if (categoryModal.isEdit) {
-        await api.categories.update(categoryModal.id, formData);
-        showToast("Category updated successfully!");
-      } else {
-        await api.categories.create(formData);
-        showToast("Category created successfully!");
-      }
-      fetchActiveMetadata();
-      setCategoryModal({ open: false, isEdit: false, id: null, name: "", image: null });
-      setImagePreview(null);
+      console.log("Category Response:", response);
+
+      const data = response.data || [];
+
+      setCategoriesList(
+        data.map((c, index) => ({
+          id: c.id ?? c.sn ?? index,
+          name: c.name,
+          image: c.image,
+          action: c.action,
+          deleted: statusFilter === "deleted",
+        }))
+      );
     } catch (err) {
-      if (categoryModal.isEdit) {
-        setCategoriesList(categoriesList.map(c => c.id === categoryModal.id ? { ...c, name: categoryModal.name } : c));
-      } else {
-        setCategoriesList([...categoriesList, { id: Date.now(), name: categoryModal.name, action: true, deleted: false }]);
-      }
-      showToast("Updated client state locally.");
-      setCategoryModal({ open: false, isEdit: false, id: null, name: "", image: null });
-      setImagePreview(null);
-    } finally {
-      setLoading(false);
+      console.error(err);
+      setCategoriesList([]);
     }
   };
+  const fetchBrands = async () => {
+    try {
+      const response =
+        statusFilter === "deleted"
+          ? await getDeletedBrands()
+          : await getActiveBrands();
+
+      console.log("Brand Response:", response);
+
+      const data = response.data || [];
+
+      setBrandsList(
+        data.map((b, index) => ({
+          id: b.id ?? b.sn ?? index,
+          name: b.name,
+          categoryId: b.categoryId,
+          categoryName: b.categoryName,
+          image: b.image,
+          action: b.action,
+          isDeleted: statusFilter === "deleted",
+        }))
+      );
+    } catch (err) {
+      console.error(err);
+      setBrandsList([]);
+    }
+  };
+
+ 
+  useEffect(() => {
+    fetchProducts();
+     fetchCategories();
+
+    fetchBrands();
+  }, [statusFilter]);
+ 
+
+  const handleCategorySubmit = async (e) => {
+
+    e.preventDefault();
+
+    try {
+
+        const formData = new FormData();
+
+        formData.append("name", categoryModal.name);
+
+        formData.append("action", true);
+
+        if(categoryModal.image){
+            formData.append("image", categoryModal.image);
+        }
+
+        if(categoryModal.isEdit){
+
+            await updateCategory(categoryModal.id, formData);
+
+            showToast("Category Updated");
+
+        }else{
+
+            await createCategory(formData);
+
+            showToast("Category Created");
+
+        }
+
+        fetchCategories();
+
+        setCategoryModal({
+            open:false,
+            isEdit:false,
+            id:null,
+            name:"",
+            image:null
+        });
+
+        setImagePreview(null);
+
+    }
+    catch(err){
+
+        console.log(err);
+
+        showToast("Failed","error");
+
+    }
+
+}
 
   const toggleCategoryStatus = async (id, currentStatus) => {
     try {
@@ -661,28 +499,40 @@ useEffect(() => {
     }
   };
 
-  const deleteCategory = async (id) => {
-    try {
-      await api.categories.softDelete(id);
-      showToast("Category deleted successfully!");
-      fetchActiveMetadata();
-    } catch (err) {
-      setCategoriesList(categoriesList.map(c => c.id === id ? { ...c, deleted: true } : c));
-      showToast("Category soft-deleted locally.");
-    }
-  };
 
-  const restoreCategory = async (id) => {
-    try {
-      await api.categories.restore(id);
-      showToast("Category restored successfully!");
-      fetchActiveMetadata();
-    } catch (err) {
-      setCategoriesList(categoriesList.map(c => c.id === id ? { ...c, deleted: false } : c));
-      showToast("Category restored locally.");
-    }
-  };
 
+const deleteCategoryData = async (id) => {
+
+    console.log("Delete ID =", id);
+
+    if (!id) {
+        alert("ID is undefined");
+        return;
+    }
+
+    await deleteCategory(id);
+
+    fetchCategories();
+}
+
+
+  const restoreCategoryData = async(id)=>{
+
+    try{
+
+        await restoreCategory(id);
+
+        showToast("Restored");
+
+        fetchCategories();
+
+    }catch(err){
+
+        console.log(err);
+
+    }
+
+}
   // ━━━━━━━━━━━━━━━━━ 6. BRAND ENDPOINTS CRUD ━━━━━━━━━━━━━━━━━
   const handleBrandSubmit = async (e) => {
     e.preventDefault();
@@ -697,10 +547,10 @@ useEffect(() => {
       }
 
       if (brandModal.isEdit) {
-        await api.brands.update(brandModal.id, formData);
+       await updateBrand(brandModal.id, formData);
         showToast("Brand updated successfully!");
       } else {
-        await api.brands.create(formData);
+       await createBrand(formData);
         showToast("Brand created successfully!");
       }
       fetchActiveMetadata();
@@ -723,7 +573,7 @@ useEffect(() => {
 
   const toggleBrandStatus = async (id, currentStatus) => {
     try {
-      await api.brands.changeAction(id, !currentStatus);
+      await changeBrandAction(id, !currentStatus);
       showToast("Brand status updated!");
       fetchActiveMetadata();
     } catch (err) {
@@ -734,7 +584,7 @@ useEffect(() => {
 
   const deleteBrand = async (id) => {
     try {
-      await api.brands.softDelete(id);
+     await deleteBrand(id);
       showToast("Brand deleted successfully!");
       fetchActiveMetadata();
     } catch (err) {
@@ -745,7 +595,7 @@ useEffect(() => {
 
   const restoreBrand = async (id) => {
     try {
-      await api.brands.restore(id);
+     await restoreBrand(id);
       showToast("Brand restored successfully!");
       fetchActiveMetadata();
     } catch (err) {
@@ -911,8 +761,8 @@ useEffect(() => {
           <button
             onClick={() => setActiveTab("products")}
             className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === "products"
-                ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
-                : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
+              : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               }`}
           >
             <Package size={16} />
@@ -922,8 +772,8 @@ useEffect(() => {
           <button
             onClick={() => setActiveTab("categories")}
             className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === "categories"
-                ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
-                : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
+              : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               }`}
           >
             <Layers size={16} />
@@ -933,8 +783,8 @@ useEffect(() => {
           <button
             onClick={() => setActiveTab("brands")}
             className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === "brands"
-                ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
-                : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              ? "border-sky-500 text-sky-500 dark:text-sky-400 font-black"
+              : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               }`}
           >
             <Tag size={16} />
@@ -958,8 +808,8 @@ useEffect(() => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={`w-full border rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${isDark
-                    ? "bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:ring-sky-500/20"
-                    : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-sky-500/20"
+                  ? "bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:ring-sky-500/20"
+                  : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-sky-500/20"
                   }`}
               />
             </div>
@@ -970,8 +820,8 @@ useEffect(() => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 cursor-pointer transition-all ${isDark
-                    ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
-                    : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
+                  ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
+                  : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
                   }`}
               >
                 <option value="all">All Records</option>
@@ -986,8 +836,8 @@ useEffect(() => {
                 onClick={fetchActiveMetadata}
                 disabled={loading}
                 className={`p-3 rounded-xl border transition flex items-center justify-center w-full md:w-auto ${isDark
-                    ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
-                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                  ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+                  : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                   }`}
                 title="Refresh Table Records"
               >
@@ -1045,8 +895,8 @@ useEffect(() => {
                       <td className="px-6 py-4 font-black text-emerald-500 text-base">₹{p.price}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${p.stock > 10
-                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                            : "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                          : "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"
                           }`}>
                           {p.stock} Units
                         </span>
@@ -1122,6 +972,7 @@ useEffect(() => {
 
                 <tbody className={`divide-y text-sm ${isDark ? "divide-slate-800" : "divide-slate-100"}`}>
                   {filteredCategories.map((c) => (
+                    console.log("Rendering Category:", c),
                     <tr key={c.id} className={`transition ${isDark ? "hover:bg-slate-800/30 text-slate-100" : "hover:bg-slate-50 text-slate-800"
                       } ${c.deleted ? "opacity-55" : ""}`}>
                       <td className="px-6 py-4 font-mono text-slate-400">#{c.id}</td>
@@ -1136,8 +987,8 @@ useEffect(() => {
                         <button
                           onClick={() => toggleCategoryStatus(c.id, c.action)}
                           className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${c.action
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                              : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                            : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                             }`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${c.action ? "bg-emerald-500" : "bg-amber-500"}`}></span>
@@ -1149,7 +1000,13 @@ useEffect(() => {
                           {!c.deleted ? (
                             <>
                               <button
-                                onClick={() => setCategoryModal({ open: true, isEdit: true, id: c.id, name: c.name, image: null })}
+                                onClick={() => setCategoryModal({
+    open:true,
+    isEdit:true,
+    id:c.id,
+    name:c.name,
+    image:null
+})}
                                 className={`p-2 rounded-xl transition ${isDark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/25" : "bg-sky-50 text-sky-600 hover:bg-sky-100"
                                   }`}
                                 title="Edit Category"
@@ -1157,7 +1014,7 @@ useEffect(() => {
                                 <Pencil size={15} />
                               </button>
                               <button
-                                onClick={() => deleteCategory(c.id)}
+                                onClick={() => deleteCategoryData(c.id)}
                                 className={`p-2 rounded-xl transition ${isDark ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/25" : "bg-rose-50 text-rose-600 hover:bg-rose-100"
                                   }`}
                                 title="Delete Category"
@@ -1232,8 +1089,8 @@ useEffect(() => {
                         <button
                           onClick={() => toggleBrandStatus(b.id, b.action)}
                           className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${b.action
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                              : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                            : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                             }`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${b.action ? "bg-emerald-500" : "bg-amber-500"}`}></span>
@@ -1317,8 +1174,8 @@ useEffect(() => {
                     onChange={(e) => setCategoryModal({ ...categoryModal, name: e.target.value })}
                     placeholder="e.g. Edible Oils"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all shadow-inner ${isDark
-                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
-                        : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
+                      ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
+                      : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
                       }`}
                   />
                 </div>
@@ -1406,8 +1263,8 @@ useEffect(() => {
                     onChange={(e) => setBrandModal({ ...brandModal, name: e.target.value })}
                     placeholder="e.g. Fortune"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all shadow-inner ${isDark
-                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
-                        : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
+                      ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
+                      : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
                       }`}
                   />
                 </div>
@@ -1419,8 +1276,8 @@ useEffect(() => {
                     value={brandModal.categoryId}
                     onChange={(e) => setBrandModal({ ...brandModal, categoryId: e.target.value })}
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 cursor-pointer transition-all shadow-inner ${isDark
-                        ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
-                        : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
+                      ? "bg-slate-800 border-slate-700 text-white focus:ring-sky-500/20"
+                      : "bg-slate-50 border-slate-200 text-slate-800 focus:ring-sky-500/20"
                       }`}
                   >
                     <option value="">Select Category</option>
