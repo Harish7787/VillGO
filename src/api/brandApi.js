@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API = "http://localhost:8080/api/brands";
-
+// const API = "http://localhost:8080/api/brands";
+const API = "https://villgo-backend-1.onrender.com/api/brands";
 const token = () => ({
     headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
