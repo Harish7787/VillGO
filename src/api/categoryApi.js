@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API = "http://localhost:8080/api/categories";
-// const API = "https://villgo-backend-1.onrender.com/api/categories";
+// const API = "http://localhost:8080/api/categories";
+const API = "https://villgo-backend-1.onrender.com/api/categories";
 const token = () => localStorage.getItem("token");
 
 const authHeader = () => ({

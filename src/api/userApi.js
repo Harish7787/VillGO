@@ -1,6 +1,6 @@
 import axios from "axios";
-
-const API = "http://localhost:8080/api/auth";
+const API = "https://villgo-backend-1.onrender.com/api/users";
+// const API = "http://localhost:8080/api/auth";
 
 const authHeader = () => ({
     headers: {
