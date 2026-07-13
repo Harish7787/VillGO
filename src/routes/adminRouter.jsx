@@ -27,6 +27,7 @@ import Dashboard from "../pages/Dashboard";
 import ProductTable from "../components/admin/ProductTable";
 import ProductAdd from "../components/admin/ProductAdd";
 import ProductEdit from "../components/admin/ProductEdit";
+import UserTable from "../components/admin/UserTable";
 
 export default function AdminRouter() {
   return (
@@ -51,7 +52,7 @@ export default function AdminRouter() {
           element={<ProductEdit />}
         />
 
-<Route path="users" element={<Dashboard />} />
+<Route path="users" element={<UserTable />} />
       </Route>
       
     </Routes>
