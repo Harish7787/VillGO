@@ -93,7 +93,11 @@ export default function ProductTable({
   onDelete = () => { },
   onRestore = () => { },
   onEdit = () => { },
+
   apiHost = "https://villgo-backend-1.onrender.com",//"http://localhost:8080"
+
+  //apiHost = "https://villgo-backend-1.onrender.com",//"http://localhost:8080",
+
   theme = "light"
 }) {
 
